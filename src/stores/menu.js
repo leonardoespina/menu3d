@@ -2,47 +2,79 @@
 
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
-import menuItems from "../menu.js";
+import { getDishes } from "../api/platos";
 
 export const useMenuStore = defineStore("menu", () => {
-  const items = ref(menuItems);
-  const categories = computed(() => {
-    const allCategories = items.value.map((item) => item.category);
-    const uniqueCategories = [...new Set(allCategories)];
-    return ["All", ...uniqueCategories];
-  });
+  const dishes = ref([]);
   const currentIndex = ref(0);
   const isLoading = ref(true);
   const searchQuery = ref("");
   const selectedCategory = ref("All");
   const isInteractingWithFilters = ref(false);
-  const showWelcome = ref(true);
+  const currentPage = ref(1);
+  const totalPages = ref(1);
+  const pageSize = 10;
 
-  const filteredItems = computed(() => {
-    let result = items.value;
+  const fetchDishes = async (page = 1, category = null, search = "") => {
+    isLoading.value = true;
+    try {
+      const response = await getDishes(page, pageSize, category, search);
 
-    if (selectedCategory.value !== "All") {
-      result = result.filter(
-        (item) => item.category === selectedCategory.value
-      );
+      if (page === 1) {
+        dishes.value = response.data;
+      } else {
+        dishes.value = [...dishes.value, ...response.data];
+      }
+      currentPage.value = response.currentPage;
+      totalPages.value = response.totalPages;
+      isLoading.value = false;
+    } catch (error) {
+      console.error("Failed to load dishes:", error);
+      isLoading.value = false;
     }
+  };
 
-    if (searchQuery.value) {
-      result = result.filter((item) =>
-        item.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-    }
+  fetchDishes();
 
-    return result;
+  const filteredDishes = computed(() => {
+    // La lógica de filtrado ahora se maneja en el backend.
+    // Este computed se mantiene para reflejar el estado actual del array 'dishes'.
+    // Si necesitas filtrar localmente, descomenta la siguiente lógica.
+    // let result = dishes.value;
+    // if (selectedCategory.value !== "All") {
+    //   result = result.filter(item => item.categoriaId === selectedCategory.value);
+    // }
+    // if (searchQuery.value) {
+    //   result = result.filter(item => item.nombre?.toLowerCase().includes(searchQuery.value?.toLowerCase() ?? ""));
+    // }
+    // return result;
+    return dishes.value;
   });
 
   const currentItem = computed(() => {
-    return filteredItems.value[currentIndex.value] || {};
+    // Devuelve un objeto vacío si no hay platos en la lista o el índice es inválido
+    if (
+      !filteredDishes.value ||
+      filteredDishes.value.length === 0 ||
+      currentIndex.value >= filteredDishes.value.length
+    ) {
+      return {};
+    }
+    return filteredDishes.value[currentIndex.value];
   });
 
   const goToNextItem = () => {
-    if (currentIndex.value < filteredItems.value.length - 1) {
+    if (currentIndex.value < filteredDishes.value.length - 1) {
       currentIndex.value++;
+    } else if (currentPage.value < totalPages.value && !isLoading.value) {
+      currentPage.value++;
+      fetchDishes(
+        currentPage.value,
+        selectedCategory.value === "All" ? null : selectedCategory.value,
+        searchQuery.value
+      ).then(() => {
+        currentIndex.value++;
+      });
     } else {
       currentIndex.value = 0;
     }
@@ -52,13 +84,25 @@ export const useMenuStore = defineStore("menu", () => {
     if (currentIndex.value > 0) {
       currentIndex.value--;
     } else {
-      currentIndex.value = filteredItems.value.length - 1;
+      currentIndex.value = filteredDishes.value.length - 1;
     }
   };
 
-  const setCategory = (category) => {
-    selectedCategory.value = category;
-    applyFilters();
+  const setCategory = (categoryId) => {
+    currentIndex.value = 0;
+    selectedCategory.value = categoryId;
+    searchQuery.value = "";
+    currentPage.value = 1;
+    fetchDishes(1, categoryId === "All" ? null : categoryId);
+  };
+
+  const setSearchQuery = (query) => {
+    // Resetea el índice antes de cargar nuevos datos para evitar el error
+    currentIndex.value = 0;
+    searchQuery.value = query;
+    selectedCategory.value = "All";
+    currentPage.value = 1;
+    fetchDishes(1, null, query);
   };
 
   const applyFilters = () => {
@@ -77,18 +121,13 @@ export const useMenuStore = defineStore("menu", () => {
     isInteractingWithFilters.value = status;
   };
 
-  const toggleShowWelcome = () => {
-    showWelcome.value = !showWelcome.value;
-  };
-
   return {
-    items,
-    categories,
+    dishes,
     currentIndex,
     isLoading,
     searchQuery,
     selectedCategory,
-    filteredItems,
+    filteredDishes,
     currentItem,
     isInteractingWithFilters,
     goToNextItem,
@@ -98,7 +137,7 @@ export const useMenuStore = defineStore("menu", () => {
     initializeFilter,
     setLoading,
     setInteractingWithFilters,
-    showWelcome,
-    toggleShowWelcome,
+    fetchDishes,
+    setSearchQuery,
   };
 });

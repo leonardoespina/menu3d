@@ -2,8 +2,10 @@
 import { ref, watch, onMounted } from "vue";
 import { useMenuStore } from "../stores/menu";
 import FilterComponent from "../components/FilterComponent.vue";
-import ShoppingCart from "../components/ShoppingCart.vue";
+//import ShoppingCart from "../components/ShoppingCart.vue";
 import { useCartStore } from "../stores/cart";
+import AppBar from "../components/AppBar.vue";
+import { UPLOADS_BASE_URL } from "../api";
 
 const menuStore = useMenuStore();
 const cartStore = useCartStore();
@@ -40,12 +42,17 @@ onMounted(() => {
     });
   }
   menuStore.initializeFilter();
+  //menuStore.fetchDishes();
 });
 
 const handleFilterInteractionStart = () => {
   if (viewer.value) {
     viewer.value.cameraControls = false;
   }
+};
+const handleToggleMenu = () => {
+  // Lógica para abrir/cerrar el menú lateral si es necesario
+  console.log("Toggle menu clicked");
 };
 
 const handleFilterInteractionEnd = () => {
@@ -57,10 +64,11 @@ const handleFilterInteractionEnd = () => {
 
 <template>
   <div id="menu-screen">
+    <AppBar @toggle-menu="handleToggleMenu" />
     <div class="card" style="position: relative">
       <div class="header-container">
         <div class="menu-header"></div>
-        <div class="titulo-caligrafico">Menu 3d</div>
+
         <FilterComponent
           @interaction-start="handleFilterInteractionStart"
           @interaction-end="handleFilterInteractionEnd"
@@ -71,7 +79,7 @@ const handleFilterInteractionEnd = () => {
         <div class="loader" v-if="menuStore.isLoading">Cargando...</div>
         <model-viewer
           ref="viewer"
-          :src="menuStore.currentItem.src"
+          :src="UPLOADS_BASE_URL + menuStore.currentItem.imagen"
           alt="Modelo"
           ar
           camera-controls
@@ -84,23 +92,23 @@ const handleFilterInteractionEnd = () => {
       </div>
 
       <div class="card-info" ref="cardInfo">
-        <div class="card-title">{{ menuStore.currentItem.title }}</div>
-        <div class="card-price">{{ menuStore.currentItem.price }}</div>
+        <div class="card-title">{{ menuStore.currentItem.nombre }}</div>
+        <div class="card-price">{{ menuStore.currentItem.precio }}</div>
         <div class="card-rating">
-          <span>★ {{ menuStore.currentItem.rating }}</span>
+          <span>★ 4.5 (6,986)</span>
         </div>
         <div class="card-ingredients">
-          <span
-            class="ingredient-tag"
-            v-for="(ingredient, index) in menuStore.currentItem.ingredients"
-            :key="index"
-          >
-            {{ ingredient }}
-          </span>
+          {{ menuStore.currentItem.descripcion }}
         </div>
         <button
           class="add-to-cart-button"
-          @click="cartStore.addItem(menuStore.currentItem)"
+          @click="
+            cartStore.addItem({
+              ...menuStore.currentItem,
+              title: menuStore.currentItem.nombre,
+              price: menuStore.currentItem.precio,
+            })
+          "
           :class="{ 'in-cart': cartStore.isInCart(menuStore.currentItem) }"
         >
           {{
@@ -117,22 +125,20 @@ const handleFilterInteractionEnd = () => {
       <div class="menu-swiper-button-next" @click="menuStore.goToNextItem">
         >
       </div>
-      <ShoppingCart />
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Estilos existentes */
 #menu-screen {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  width: 100%;
+  height: 100%; /* Asegura que ocupe el 100% de la altura de la ventana */
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-y: hidden; /* Evita el scroll vertical en el componente */
 }
 
 .card {
@@ -143,10 +149,6 @@ const handleFilterInteractionEnd = () => {
   position: relative;
 }
 
-.add-to-cart-button.in-cart {
-  background-color: #22c55e;
-}
-
 .card::before {
   content: "";
   position: absolute;
@@ -154,11 +156,12 @@ const handleFilterInteractionEnd = () => {
   background: rgba(0, 0, 0, 0.4);
 }
 
+/* Contenedor del modelo adaptado */
 .model-container {
   width: 100%;
-  height: 60%;
+  height: clamp(40vh, 60%, 70vh);
   position: relative;
-  top: 25%;
+  top: clamp(10vh, 25%, 30vh);
   background-color: transparent;
 }
 
@@ -169,6 +172,7 @@ model-viewer {
   touch-action: none;
 }
 
+/* Loader */
 .loader {
   position: absolute;
   inset: 0;
@@ -176,12 +180,13 @@ model-viewer {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.2rem);
   font-weight: bold;
 }
 
+/* Información del producto */
 .card-info {
-  padding: 1rem;
+  padding: clamp(1rem, 4vw, 2.5rem);
   position: absolute;
   bottom: 0;
   left: 0;
@@ -213,7 +218,7 @@ model-viewer {
 }
 
 .card-title {
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
   font-weight: bold;
   margin-bottom: 0.25rem;
   color: white;
@@ -222,7 +227,7 @@ model-viewer {
 .card-price {
   color: #22c55e;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
   margin-bottom: 0.5rem;
 }
 
@@ -232,11 +237,11 @@ model-viewer {
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
 }
 
 .card-ingredients {
-  font-size: 0.9rem;
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
   color: rgba(255, 255, 255, 0.8);
   display: flex;
   flex-wrap: wrap;
@@ -244,33 +249,37 @@ model-viewer {
   margin-top: 0.5rem;
 }
 
-.add-to-cart-button {
-  background-color: #4caf50; /* Green */
-  border: none;
-  color: white;
-  padding: 0.5rem 1rem;
-  text-align: center;
-  text-decoration: none;
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: 5px;
-  margin-top: 0;
-}
-
 .ingredient-tag {
   background: rgba(255, 255, 255, 0.15);
   padding: 0.25rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: clamp(0.6rem, 1.5vw, 0.8rem);
 }
 
+/* Botón agregar al carrito */
+.add-to-cart-button {
+  background-color: #4caf50;
+  border: none;
+  color: white;
+  padding: clamp(0.4rem, 1.5vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  right: clamp(0.5rem, 2vw, 1rem);
+  transform: translateY(-50%);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.add-to-cart-button.in-cart {
+  background-color: #22c55e;
+}
+
+/* Encabezado */
 .header-container {
   position: absolute;
-  top: 10px;
+  top: 1px;
   left: 0;
   right: 0;
   text-align: center;
@@ -282,10 +291,10 @@ model-viewer {
 
 .titulo-caligrafico {
   font-family: "Dancing Script", cursive;
-  font-size: 3.5rem;
+  font-size: clamp(1rem, 3vw, 1.5rem);
   color: white;
   text-shadow: 0.5px 0.5px 0 white, -0.5px -0.5px 0 white;
-  margin-bottom: 10px;
+  margin-bottom: clamp(5px, 1vh, 10px);
   letter-spacing: 1px;
   margin-top: -6px;
 }
@@ -298,12 +307,13 @@ model-viewer {
 }
 
 .food-icon {
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   animation: float 3s ease-in-out infinite;
   margin-bottom: 5px;
 }
 
+/* Botones navegación */
 .menu-swiper-button-next,
 .menu-swiper-button-prev {
   color: white;
@@ -312,8 +322,8 @@ model-viewer {
   transform: translateY(-50%);
   z-index: 20;
   background: rgba(0, 0, 0, 0.5);
-  width: 36px;
-  height: 36px;
+  width: clamp(28px, 4vw, 36px);
+  height: clamp(28px, 4vw, 36px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -323,6 +333,7 @@ model-viewer {
   transition: all 0.3s ease;
   margin: 0;
   cursor: pointer;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
 }
 
 .menu-swiper-button-next:hover,
@@ -332,36 +343,19 @@ model-viewer {
 }
 
 .menu-swiper-button-next {
-  right: 5px;
+  right: clamp(5px, 1vw, 20px);
 }
 
 .menu-swiper-button-prev {
-  left: 5px;
+  left: clamp(5px, 1vw, 20px);
 }
 
+/* Ajustes para desktop */
 @media (min-width: 768px) {
   #menu-screen {
     position: relative;
-    width: 450px;
-    height: 700px;
-  }
-
-  .menu-swiper-button-next {
-    right: 15px;
-  }
-
-  .menu-swiper-button-prev {
-    left: 15px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .menu-swiper-button-next {
-    right: 20px;
-  }
-
-  .menu-swiper-button-prev {
-    left: 20px;
+    width: 420px;
+    height: 670px;
   }
 }
 </style>

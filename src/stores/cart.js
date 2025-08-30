@@ -28,14 +28,16 @@ export const useCartStore = defineStore("cart", () => {
       // Si existe, incrementamos la cantidad
       existingItem.quantity++;
     } else {
-      // Si no existe, lo añadimos al carrito
+      // Si no existe, lo añadimos al carrito con las propiedades correctas
+      const formattedPrice =
+        typeof item.price === "string"
+          ? parseFloat(item.price.replace(/[^0-9.]/g, ""))
+          : Number(item.price);
+
       items.value.push({
         ...item,
         quantity: 1,
-        price:
-          typeof item.price === "string"
-            ? parseFloat(item.price.replace(/[^0-9.]/g, ""))
-            : Number(item.price),
+        price: isNaN(formattedPrice) ? 0 : formattedPrice,
       });
     }
   };

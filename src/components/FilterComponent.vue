@@ -1,19 +1,42 @@
 <script setup>
+import { ref, onMounted } from "vue";
 import { useMenuStore } from "../stores/menu";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation } from "swiper/modules";
-
+import { getCategories } from "../../src/api/categorias";
 import "swiper/css";
 import "swiper/css/navigation";
 
-// Emite eventos de inicio y fin de interacción
 const emit = defineEmits(["interactionStart", "interactionEnd"]);
 
 const menuStore = useMenuStore();
+const categories = ref([]);
+
+/*const toggleCategory = (category) => {
+  if (category === "All") {
+    menuStore.setCategory("All");
+  } else {
+    menuStore.setCategory(category.nombre);
+  }
+};*/
 
 const toggleCategory = (category) => {
-  menuStore.setCategory(category);
+  if (category === "All") {
+    menuStore.setCategory("All");
+  } else {
+    // Enviar el ID de la categoría en lugar del nombre
+    menuStore.setCategory(category.id);
+  }
 };
+
+onMounted(async () => {
+  try {
+    const data = await getCategories();
+    categories.value = data;
+  } catch (error) {
+    console.error("Failed to load categories:", error);
+  }
+});
 
 const modules = [Navigation];
 
@@ -28,15 +51,7 @@ const handleInteractionEnd = () => {
 
 <template>
   <div class="filter-container">
-    <div class="search-bar">
-      <input
-        type="text"
-        v-model="menuStore.searchQuery"
-        @input="menuStore.applyFilters"
-        placeholder="Buscar plato..."
-        class="search-input"
-      />
-    </div>
+    <div class="search-bar"></div>
 
     <div class="swiper-container">
       <Swiper
@@ -53,17 +68,23 @@ const handleInteractionEnd = () => {
         @mouseup="handleInteractionEnd"
       >
         <SwiperSlide
-          v-for="category in menuStore.categories"
-          :key="category"
-          :class="{ active: menuStore.selectedCategory === category }"
+          key="all"
+          :class="{ active: menuStore.selectedCategory === 'All' }"
+          @click="toggleCategory('All')"
+          class="category-button"
+        >
+          All
+        </SwiperSlide>
+        <SwiperSlide
+          v-for="category in categories"
+          :key="category.id"
+          :class="{ active: menuStore.selectedCategory === category.nombre }"
           @click="toggleCategory(category)"
           class="category-button"
         >
-          {{ category }}
+          {{ category.nombre }}
         </SwiperSlide>
       </Swiper>
-      <div class="swiper-button-prev swiper-nav-btn"></div>
-      <div class="swiper-button-next swiper-nav-btn"></div>
     </div>
   </div>
 </template>
@@ -76,7 +97,8 @@ const handleInteractionEnd = () => {
   gap: 10px;
   width: 90%;
   max-width: 500px;
-  margin: 0 auto;
+  margin: 31px auto 0; /* Margen superior aumentado */
+  padding-top: 10px;
 }
 
 .search-bar {
@@ -108,7 +130,7 @@ const handleInteractionEnd = () => {
 .swiper-container {
   position: relative;
   width: 100%;
-  padding: 0 40px;
+  padding: -1 40px;
 }
 
 .swiper {
@@ -158,7 +180,7 @@ const handleInteractionEnd = () => {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
   backdrop-filter: blur(2px);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;

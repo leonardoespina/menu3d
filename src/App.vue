@@ -1,10 +1,5 @@
 <script setup>
-import { ref, onMounted } from "vue";
-import { useMenuStore } from "./stores/menu";
-import WelcomeScreen from "./components/WelcomeScreen.vue";
-import MenuScreen from "./components/MenuScreen.vue";
-
-const menuStore = useMenuStore();
+import { onMounted } from "vue";
 
 // Cargar el script de model-viewer dinámicamente
 onMounted(() => {
@@ -17,16 +12,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="app-container">
-    <WelcomeScreen v-if="menuStore.showWelcome" />
-    <MenuScreen v-else />
+  <div id="app">
+    <div class="content-wrapper">
+      <router-view />
+    </div>
   </div>
 </template>
 
-<style>
+<style scoped>
+/* Estilos globales */
 /* Estilos globales */
 body {
-  font-family: system-ui, sans-serif;
   margin: 0;
   background: #0f172a;
   color: #e2e8f0;
@@ -34,7 +30,23 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  overflow: hidden;
+  overflow-y: hidden; /* Oculta el scroll vertical */
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  display: flex;
+  justify-content: center; /* Centra el contenido horizontalmente */
+  align-items: center; /* Centra el contenido verticalmente */
+}
+
+.content-wrapper {
+  width: 100%;
+  max-width: 450px; /* Ancho del componente WelcomeScreen para desktop */
+  padding: 0 20px;
+  margin: 0 auto; /* Centra el contenedor horizontalmente */
 }
 
 /* Clases de utilidad para gestión de la vista */
@@ -74,6 +86,4 @@ body {
     height: 100vh;
   }
 }
-
-/* Importamos la fuente de Google */
 </style>

@@ -1,7 +1,14 @@
 <script setup>
-import { useMenuStore } from "../stores/menu";
+//import { useMenuStore } from "../stores/menu";
+import { useRouter } from "vue-router";
 
-const menuStore = useMenuStore();
+//const menuStore = useMenuStore();
+
+const router = useRouter();
+
+const enterMenu = () => {
+  router.push("/menu");
+};
 </script>
 
 <template>
@@ -10,12 +17,10 @@ const menuStore = useMenuStore();
       <div class="titulo">Tu Restaurante</div>
       <div class="subtitulo">Bienvenidos</div>
       <div class="imagen-circular">
-        <img src="/assets/3.jpg" alt="Plato principal" />
+        <img src="/assets/6.jpg" alt="Plato principal" />
       </div>
       <div class="mensaje">Gracias por tu visita</div>
-      <a href="#" class="btn" @click.prevent="menuStore.toggleShowWelcome"
-        >Entrar</a
-      >
+      <a href="#" class="btn" @click.prevent="enterMenu">Entrar</a>
       <div class="registro">
         ¿No tienes cuenta? <a href="#">Regístrate ahora</a>
       </div>
@@ -33,7 +38,7 @@ const menuStore = useMenuStore();
   justify-content: center;
   align-items: center;
   animation: fadeIn 1s ease-in-out;
-  background: url("/assets/3.jpg") no-repeat center center;
+  background: url("../assets/3.jpg") no-repeat center center;
   background-size: cover;
   position: fixed;
   top: 0;
@@ -119,9 +124,12 @@ const menuStore = useMenuStore();
   #welcome-screen {
     width: 450px;
     height: 700px;
-    position: relative;
+    position: fixed; /* Asegura que el componente esté fijo en la pantalla */
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     border-radius: 12px;
-    margin: 2rem;
+    /* margin: 2rem; <-- Comenta o elimina esta línea */
   }
 }
 </style>

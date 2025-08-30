@@ -1,43 +1,41 @@
 // C:/restaurant-3d-menu/src/menu.js
 
-import BASE_URL from "./api.js";
-
 const menuItems = [
   {
     id: 1,
-    src: "/models/leo.glb",
-    title: "Cappuccino",
+    src: "/menu3d/models/1.glb",
+    title: "Auyama al Vapor",
     price: "$4.50",
     rating: "4.5 (6,986)",
-    ingredients: ["Coffee", "Milk", "Micilum Roasted"],
-    category: "Bebidas",
+    ingredients: ["Auyama", "Especies", "Ahumado"],
+    category: "Vegetales",
   },
   {
     id: 2,
-    src: "/models/2.glb",
-    title: "Hamburguesa Clásica",
+    src: "/menu3d/models/2.glb",
+    title: "Cupake",
     price: "$9.90",
     rating: "4.8 (3,452)",
-    ingredients: ["Carne", "Queso", "Lechuga", "Tomate"],
-    category: "Comida Rápida",
+    ingredients: ["Chocolate"],
+    category: "Postre",
   },
   {
     id: 3,
-    src: "/models/3.glb",
-    title: "Ensalada César",
+    src: "/menu3d/models/3.glb",
+    title: "Hamburguesa Clásica",
     price: "$7.50",
     rating: "4.3 (2,156)",
-    ingredients: ["Lechuga", "Pollo", "Parmesano", "Aderezo"],
-    category: "Ensaladas",
+    ingredients: ["Lechuga", "Pollo", "Papa Frita", "Aderezo"],
+    category: "Comida Rapida",
   },
   {
     id: 4,
-    src: "/models/3.glb",
-    title: "Caldo Precocida",
+    src: "/menu3d/models/4.glb",
+    title: "Grilled Sandwich",
     price: "$7.50",
     rating: "4.3 (2,156)",
-    ingredients: ["Lechuga", "Pollo", "Parmesano", "Aderezo"],
-    category: "Comida Rápida",
+    ingredients: ["Leche", "Sal", "Cloruro de calcio", "Cuajo"],
+    category: "Sandwich",
   },
 ];
 

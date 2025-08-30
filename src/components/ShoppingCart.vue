@@ -1,7 +1,17 @@
 <template>
   <div class="shopping-cart-container">
     <div class="cart-icon" @click="toggleCart">
-      🛒
+      <svg
+        viewBox="0 0 24 24"
+        width="24"
+        height="24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4H6zM3 6h18" />
+        <path d="M16 10a4 4 0 1 1-8 0" />
+      </svg>
       <span class="cart-badge" v-if="cartStore.itemCount > 0">
         {{ cartStore.itemCount }}
       </span>
@@ -10,7 +20,7 @@
     <transition name="fade-slide">
       <div class="cart-dropdown" v-if="isCartOpen">
         <div class="cart-header">
-          <h3>Your Cart</h3>
+          <h3>Tu Pedido</h3>
           <button class="close-btn" @click="toggleCart">×</button>
         </div>
 
@@ -38,25 +48,36 @@
             </div>
           </div>
         </div>
-        <div class="empty-cart" v-else>Your cart is empty</div>
+        <div class="empty-cart" v-else>No existe Pedido</div>
 
         <div class="cart-footer" v-if="cartStore.items.length > 0">
           <div class="cart-total">
             Total: {{ formatPrice(cartStore.cartTotal) }}
           </div>
-          <button class="checkout-btn" @click="checkout">Checkout</button>
+          <button class="checkout-btn" @click="checkout">
+            Realizar Pedido
+          </button>
           <button class="clear-btn" @click="cartStore.clearCart">
-            Clear Cart
+            Limpiar Pedido
           </button>
         </div>
       </div>
     </transition>
+    <CheckoutPanel ref="checkoutPanelRef" @close="isCartOpen = false" />
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
 import { useCartStore } from "../stores/cart";
+import CheckoutPanel from "./CheckoutPanel.vue";
+
+const checkoutPanelRef = ref(null);
+
+const checkout = () => {
+  // En lugar de alert, abrir el panel de checkout
+  checkoutPanelRef.value?.openPanel();
+};
 
 const cartStore = useCartStore();
 const isCartOpen = ref(false);
@@ -75,11 +96,11 @@ const decreaseQuantity = (index) => {
   cartStore.updateQuantity(index, newQuantity);
 };
 
-const checkout = () => {
+/*const checkout = () => {
   alert(`Checkout - Total: ${formatPrice(cartStore.cartTotal)}`);
   cartStore.clearCart();
   isCartOpen.value = false;
-};
+};*/
 
 const formatPrice = (price) => {
   const numericPrice =
@@ -113,14 +134,21 @@ const formatPrice = (price) => {
   cursor: pointer;
   transition: transform 0.3s ease;
   background: rgba(0, 0, 0, 0.5);
-  width: 50px;
-  height: 50px;
+  width: 31px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.cart-icon svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  transition: all 0.2s ease;
 }
 
 .cart-icon:hover {
@@ -149,11 +177,11 @@ const formatPrice = (price) => {
   right: 0;
   width: 320px;
   max-height: 500px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.7); /* Fondo oscuro semi-transparente */
+  backdrop-filter: blur(15px); /* Aumentado de 10px a 15px */
   -webkit-backdrop-filter: blur(10px);
   border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8); /* Aumentada opacidad */
   overflow: hidden;
   color: white;
   display: flex;
