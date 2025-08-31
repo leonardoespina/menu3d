@@ -7,6 +7,11 @@ const routes = [
     component: () => import("../components/WelcomeScreen.vue"), // Lazy loading
   },
   {
+    path: "/login",
+    name: "login",
+    component: () => import("../components/Login.vue"), // Lazy loading
+  },
+  {
     path: "/menu",
     name: "menu",
     component: () => import("../components/MenuScreen.vue"),

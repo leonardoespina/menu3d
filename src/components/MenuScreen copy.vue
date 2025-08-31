@@ -2,6 +2,7 @@
 import { ref, watch, onMounted } from "vue";
 import { useMenuStore } from "../stores/menu";
 import FilterComponent from "../components/FilterComponent.vue";
+//import ShoppingCart from "../components/ShoppingCart.vue";
 import { useCartStore } from "../stores/cart";
 import AppBar from "../components/AppBar.vue";
 import { UPLOADS_BASE_URL } from "../api";
@@ -41,6 +42,7 @@ onMounted(() => {
     });
   }
   menuStore.initializeFilter();
+  //menuStore.fetchDishes();
 });
 
 const handleFilterInteractionStart = () => {
@@ -48,8 +50,8 @@ const handleFilterInteractionStart = () => {
     viewer.value.cameraControls = false;
   }
 };
-
 const handleToggleMenu = () => {
+  // Lógica para abrir/cerrar el menú lateral si es necesario
   console.log("Toggle menu clicked");
 };
 
@@ -62,11 +64,11 @@ const handleFilterInteractionEnd = () => {
 
 <template>
   <div id="menu-screen">
-    <div class="menu-container">
-      <AppBar @toggle-menu="handleToggleMenu" />
+    <AppBar @toggle-menu="handleToggleMenu" />
+    <div class="card" style="position: relative">
+      <div class="header-container">
+        <div class="menu-header"></div>
 
-      <!-- Contenedor para el filtro con mejor visualización -->
-      <div class="filter-wrapper">
         <FilterComponent
           @interaction-start="handleFilterInteractionStart"
           @interaction-end="handleFilterInteractionEnd"
@@ -87,16 +89,7 @@ const handleFilterInteractionEnd = () => {
           touch-action="none"
         >
         </model-viewer>
-        <div class="menu-swiper-button-prev" @click="menuStore.goToPrevItem">
-          <
-        </div>
-        <div class="menu-swiper-button-next" @click="menuStore.goToNextItem">
-          >
-        </div>
       </div>
-
-      <!-- Espaciador para mejorar la separación -->
-      <div class="info-spacer"></div>
 
       <div class="card-info" ref="cardInfo">
         <div class="card-title">{{ menuStore.currentItem.nombre }}</div>
@@ -125,11 +118,61 @@ const handleFilterInteractionEnd = () => {
           }}
         </button>
       </div>
+
+      <div class="menu-swiper-button-prev" @click="menuStore.goToPrevItem">
+        <
+      </div>
+      <div class="menu-swiper-button-next" @click="menuStore.goToNextItem">
+        >
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+#menu-screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%; /* Asegura que ocupe el 100% de la altura de la ventana */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-y: hidden; /* Evita el scroll vertical en el componente */
+}
+
+.card {
+  background: url("/assets/3.jpg") no-repeat center center;
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Contenedor del modelo adaptado */
+.model-container {
+  width: 100%;
+  height: clamp(40vh, 60%, 70vh);
+  position: relative;
+  top: clamp(10vh, 25%, 30vh);
+  background-color: transparent;
+}
+
+model-viewer {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  touch-action: none;
+}
+
+/* Loader */
 .loader {
   position: absolute;
   inset: 0;
@@ -143,14 +186,16 @@ const handleFilterInteractionEnd = () => {
 
 /* Información del producto */
 .card-info {
-  padding: clamp(1rem, 4vw, 1.5rem);
-  position: relative;
-  margin-top: 0.5rem;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 1;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   transform: translateY(0);
   opacity: 1;
   transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
@@ -173,7 +218,7 @@ const handleFilterInteractionEnd = () => {
 }
 
 .card-title {
-  font-size: clamp(2rem, 2.5vw, 1.5rem);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
   font-weight: bold;
   margin-bottom: 0.25rem;
   color: white;
@@ -202,8 +247,6 @@ const handleFilterInteractionEnd = () => {
   flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: 0.5rem;
-  margin-right: 90px;
-  margin-bottom: 0.5rem;
 }
 
 .ingredient-tag {
@@ -221,36 +264,53 @@ const handleFilterInteractionEnd = () => {
   padding: clamp(0.4rem, 1.5vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
   text-align: center;
   position: absolute;
-  bottom: clamp(1rem, 3vw, 1.5rem);
-  right: clamp(1rem, 3vw, 1.5rem);
+  top: 50%;
+  right: clamp(0.5rem, 2vw, 1rem);
+  transform: translateY(-50%);
   font-size: clamp(0.8rem, 1.5vw, 1rem);
   cursor: pointer;
   border-radius: 5px;
-  z-index: 2;
 }
 
 .add-to-cart-button.in-cart {
   background-color: #22c55e;
 }
 
-#menu-screen {
-  position: fixed;
-  inset: 0;
+/* Encabezado */
+.header-container {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 10;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  background: url("../assets/3.jpg") no-repeat center center;
-  background-size: cover;
-  z-index: 2000;
-  padding: 1rem;
 }
 
-#menu-screen::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(3px);
+.titulo-caligrafico {
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  color: white;
+  text-shadow: 0.5px 0.5px 0 white, -0.5px -0.5px 0 white;
+  margin-bottom: clamp(5px, 1vh, 10px);
+  letter-spacing: 1px;
+  margin-top: -6px;
+}
+
+.menu-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.food-icon {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: 5px;
 }
 
 /* Botones navegación */
@@ -290,158 +350,12 @@ const handleFilterInteractionEnd = () => {
   left: clamp(5px, 1vw, 20px);
 }
 
-.menu-container {
-  position: relative;
-  z-index: 2;
-  width: 90%;
-  max-width: 520px;
-  height: auto;
-  max-height: 90vh;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.model-container {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  max-height: 80vh;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-model-viewer {
-  width: 100%;
-  height: 100%;
-}
-
-/* Nuevos estilos añadidos */
-.filter-wrapper {
-  margin-bottom: 0.5rem;
-  overflow: visible;
-  height: auto;
-}
-
-.info-spacer {
-  height: 0.5rem;
-}
-
-/* Media queries para móviles */
-@media (max-width: 768px) {
+/* Ajustes para desktop */
+@media (min-width: 768px) {
   #menu-screen {
-    padding: 0;
-    align-items: stretch;
-  }
-
-  .menu-container {
-    width: 100%;
-    max-width: none;
-    max-height: none;
-    height: 100%;
-    border-radius: 0;
-    padding: 0.8rem;
-    gap: 0.6rem;
-  }
-
-  .model-container {
-    max-height: 52vh;
-    flex: 1;
-  }
-
-  .card-info {
-    margin-top: 0.3rem;
-    padding: 0.8rem;
-  }
-
-  .card-ingredients {
-    margin-right: 80px;
-  }
-
-  .add-to-cart-button {
-    bottom: 0.6rem;
-    right: 0.6rem;
-    padding: 0.5rem 1rem;
-  }
-
-  .filter-wrapper {
-    max-height: none;
-    overflow-x: auto;
-    padding-bottom: 0.3rem;
-  }
-
-  .filter-wrapper::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .filter-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-  }
-}
-
-@media (max-height: 700px) {
-  .model-container {
-    max-height: 45vh;
-  }
-
-  .menu-container {
-    max-height: 100vh;
-    overflow-y: auto;
-  }
-
-  .card-info {
-    padding: 0.8rem;
-  }
-}
-
-/* Para dispositivos muy pequeños en orientación vertical */
-@media (max-width: 360px) and (max-height: 640px) {
-  .menu-container {
-    padding: 0.6rem;
-    gap: 0.4rem;
-  }
-
-  .model-container {
-    max-height: 48vh;
-  }
-
-  .card-info {
-    padding: 0.6rem;
-  }
-
-  .card-ingredients {
-    margin-right: 70px;
-    font-size: 0.75rem;
-  }
-
-  .add-to-cart-button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.75rem;
-    bottom: 0.5rem;
-    right: 0.5rem;
-  }
-
-  .info-spacer {
-    height: 0.3rem;
-  }
-}
-
-/* Para tablets y dispositivos más grandes */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .model-container {
-    max-height: 58vh;
+    position: relative;
+    width: 420px;
+    height: 670px;
   }
 }
 </style>
