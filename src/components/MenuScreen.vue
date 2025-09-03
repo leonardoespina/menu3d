@@ -198,12 +198,12 @@ const handleFilterInteractionEnd = () => {
 .card-ingredients {
   font-size: clamp(0.7rem, 1.8vw, 0.9rem);
   color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
   margin-top: 0.5rem;
-  margin-right: 90px;
   margin-bottom: 0.5rem;
+  padding-right: 90px; /* Cambiado de margin-right a padding-right */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .ingredient-tag {
@@ -411,6 +411,10 @@ model-viewer {
   .menu-container {
     padding: 0.6rem;
     gap: 0.4rem;
+  }
+  .card-ingredients {
+    padding-right: 70px; /* Ajuste para dispositivos muy pequeños */
+    font-size: 0.75rem;
   }
 
   .model-container {

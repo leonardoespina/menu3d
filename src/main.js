@@ -12,3 +12,8 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 app.mount("#app");
+
+// Inicializar autenticación
+import { useAuthStore } from "./stores/auth";
+const authStore = useAuthStore();
+authStore.initialize();

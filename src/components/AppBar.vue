@@ -1,12 +1,18 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import ShoppingCart from "./ShoppingCart.vue";
 import { useMenuStore } from "../stores/menu";
+import { useAuthStore } from "../stores/auth"; // Importar el store de autenticación
 
 const router = useRouter();
 const menuStore = useMenuStore();
+const authStore = useAuthStore(); // Inicializar el store de autenticación
+
 const isUserMenuOpen = ref(false);
+
+// Computed para verificar si el usuario está autenticado
+const isAuthenticated = computed(() => authStore.isAuthenticated);
 
 const toggleUserMenu = () => {
   isUserMenuOpen.value = !isUserMenuOpen.value;
@@ -17,8 +23,14 @@ const navigateToHome = () => {
 };
 
 const logout = () => {
-  // Aquí iría la lógica de logout
-  router.push("/login");
+  // Llamar a la acción de logout del store de autenticación
+  authStore.logout();
+
+  // Cerrar el menú de usuario
+  isUserMenuOpen.value = false;
+
+  // Redirigir a la pantalla de bienvenida
+  router.push("/");
 };
 </script>
 
@@ -85,7 +97,8 @@ const logout = () => {
 
         <transition name="fade-slide">
           <div v-if="isUserMenuOpen" class="user-menu-dropdown">
-            <button class="menu-item" @click="logout">
+            <!-- Mostrar el botón de logout solo si el usuario está autenticado -->
+            <button v-if="isAuthenticated" class="menu-item" @click="logout">
               <svg
                 viewBox="0 0 24 24"
                 width="16"
@@ -100,6 +113,23 @@ const logout = () => {
               </svg>
               <span>Salir</span>
             </button>
+
+            <!-- Opcional: Mostrar opción de login si no está autenticado -->
+            <button v-else class="menu-item" @click="router.push('/login')">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+              <span>Iniciar Sesión</span>
+            </button>
           </div>
         </transition>
       </div>
@@ -108,6 +138,7 @@ const logout = () => {
 </template>
 
 <style scoped>
+/* Los estilos permanecen iguales */
 .app-bar {
   position: absolute;
   top: 0;

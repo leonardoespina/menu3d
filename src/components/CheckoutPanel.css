@@ -35,7 +35,8 @@
   position: fixed;
   inset: 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center; /* Cambio: centrar en el eje horizontal */
+  align-items: center; /* Cambio: centrar en el eje vertical */
   z-index: 3000;
   background: rgba(0, 0, 0, 0.5);
 }
@@ -77,16 +78,24 @@
 .checkout-panel {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto 1fr auto; /* Añadida fila para navegación */
-  width: 100%;
-  max-width: 480px;
-  height: 100vh;
+  grid-template-rows: auto auto 1fr auto;
+  /* Ancho y alto ajustado para igualar a MenuScreen */
+  width: 90%;
+  max-width: 520px;
+  height: auto;
+  max-height: 90vh;
+  /* Centro el panel en la pantalla */
+  margin: auto;
+  /* Añadido para controlar el desbordamiento en dispositivos pequeños */
   overflow-y: auto;
-  z-index: 3;
+
+  /* Estilos de glassmorphism */
   background: rgba(248, 250, 252, 0.95);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border-radius: 16px; /* Ajuste para coincidir con MenuScreen */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Añadido para el borde de MenuScreen */
   color: #1f2937;
 }
 
