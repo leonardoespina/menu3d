@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted } from "vue";
+import Notifications from "./components/ui/Notifications.vue";
 
 // Cargar el script de model-viewer dinámicamente
 onMounted(() => {
@@ -15,6 +16,7 @@ onMounted(() => {
   <div id="app">
     <div class="content-wrapper">
       <router-view />
+      <Notifications />
     </div>
   </div>
 </template>

@@ -90,7 +90,7 @@ export default {
   position: relative;
   z-index: 2;
   width: 90%;
-  max-width: 520px;
+  max-width: 720px;
   height: auto;
   max-height: 90vh;
   background: var(--container-bg);

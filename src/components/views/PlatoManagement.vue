@@ -1,4 +1,3 @@
-<!-- PlatoManagement.vue -->
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useAuthStore } from "../../stores/auth";
@@ -6,9 +5,11 @@ import DataTable from "../../components/datatable/DataTable.vue";
 import BaseMenu from "../../components/basemenu/BaseMenu.vue";
 import backgroundImage from "../../assets/3.jpg";
 import { useCategories } from "../../composables/useCategories";
+import { useNotifications } from "../../composables/useNotifications"; // 1. Importar el composable
 
 const authStore = useAuthStore();
 const { categories, loading, error, loadCategories } = useCategories();
+const { addNotification } = useNotifications(); // 2. Destructurar la función addNotification
 
 // Configuración de columnas para la tabla de platos
 const columns = ref([
@@ -50,21 +51,22 @@ const columns = ref([
   },
   {
     label: "Categoría",
-    field: "categoriaNombre", // Mostrar nombre en tabla
-    type: "select", // Usar select en formulario
+    field: "categoriaNombre",
+    type: "select",
     sortable: true,
     filterable: true,
     required: true,
     options: [],
-    formField: "categoriaId", // Campo real para el formulario
+    formField: "categoriaId",
     relationField: "categoriaId",
     editable: true,
   },
-
   {
-    label: "Imagen",
+    label: "Modelo 3D",
     field: "imagen",
-    type: "text",
+    type: "file",
+    accept: ".glb",
+    uploadLabel: "Seleccionar modelo 3D (GLB)",
     sortable: false,
     filterable: false,
     editable: true,
@@ -74,10 +76,8 @@ const columns = ref([
 // Mapa de categorías para búsqueda rápida
 const categoriesMap = ref({});
 
-// Observar cambios en las categorías cargadas
 watch(categories, (newCategories) => {
-  if (newCategories && newCategories.length > 0) {
-    // Crear mapa para búsqueda rápida
+  if (newCategories) {
     categoriesMap.value = newCategories.reduce((map, cat) => {
       map[cat.id] = cat.nombre;
       return map;
@@ -98,23 +98,29 @@ watch(categories, (newCategories) => {
   }
 });
 
-// Manejadores de eventos
 const handleCreate = (newItem) => {
   console.log("Plato creado:", newItem);
+  // Si el backend devuelve { plato: {...} }, usar newItem.plato
+  const createdPlato = newItem.plato || newItem;
+  addNotification("¡Plato creado exitosamente!", "success");
 };
 
 const handleUpdate = (updatedItem) => {
   console.log("Plato actualizado:", updatedItem);
+  addNotification("¡Plato actualizado exitosamente!", "success");
 };
 
 const handleDelete = (deletedItem) => {
   console.log("Plato eliminado:", deletedItem);
+  addNotification("¡Plato eliminado exitosamente!", "success");
 };
 
 const handleError = (errorInfo) => {
   console.error("Error en operación:", errorInfo);
+  const errorMessage =
+    errorInfo.error?.message || errorInfo.error || "Error desconocido";
+  addNotification(`Error en ${errorInfo.type}: ${errorMessage}`, "error");
 };
-
 // Cargar categorías al montar el componente
 onMounted(() => {
   loadCategories();
@@ -138,5 +144,3 @@ onMounted(() => {
     />
   </BaseMenu>
 </template>
-
-<style scoped></style>

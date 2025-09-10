@@ -9,7 +9,7 @@ import { useSwiperInteractions } from "../../composables/useSwiperInteractions";
 const emit = defineEmits(["interactionStart", "interactionEnd"]);
 const menuStore = useMenuStore();
 
-const { categories, loadCategories } = useCategories();
+const { categories, loadCategories, loadMoreCategories } = useCategories();
 const { handleInteractionStart, handleInteractionEnd } =
   useSwiperInteractions(emit);
 
@@ -37,6 +37,7 @@ loadCategories();
       @toggle-category="toggleCategory"
       @interaction-start="handleInteractionStart"
       @interaction-end="handleInteractionEnd"
+      @load-more="loadMoreCategories"
     />
   </div>
 </template>

@@ -2,7 +2,11 @@ import { get, post, put, del } from ".";
 
 const CATEGORY_API_URL = "/api/categorias";
 
-export const getCategories = (token = null) => get(CATEGORY_API_URL, token);
+export const getCategories = (params = {}, token = null) => {
+  const query = new URLSearchParams(params).toString();
+  const url = query ? `${CATEGORY_API_URL}?${query}` : CATEGORY_API_URL;
+  return get(url, token);
+};
 export const getCategory = (id, token = null) =>
   get(`${CATEGORY_API_URL}/${id}`, token);
 export const createCategory = (data, token = null) =>

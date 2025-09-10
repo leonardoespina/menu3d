@@ -3,6 +3,7 @@
 import { ref, onMounted, watch, computed } from "vue";
 import { useAuthStore } from "../../stores/auth";
 import { get, post, put, del } from "../../api";
+import { useFileUpload } from "../../composables/useFileUpload";
 import DataTableForm from "./DataTableForm.vue";
 
 const props = defineProps({
@@ -39,6 +40,13 @@ const props = defineProps({
 const emit = defineEmits(["on-create", "on-update", "on-delete", "on-error"]);
 
 const authStore = useAuthStore();
+const {
+  uploadFile,
+  isUploading,
+  uploadError,
+  uploadSuccess,
+  resetUploadState,
+} = useFileUpload();
 const isLoading = ref(false);
 const isFormModalOpen = ref(false);
 const currentItem = ref(null);
@@ -159,14 +167,33 @@ const openEditModal = (item) => {
 };
 
 // Manejar envío del formulario
-const handleSubmit = async (formData) => {
+const handleSubmit = async (data) => {
   try {
-    if (isEditMode.value) {
-      await put(`${props.endpoint}/${formData.id}`, formData, authStore.token);
-      emit("on-update", formData);
+    let response;
+    const isFormData = data instanceof FormData;
+
+    if (isFormData) {
+      const url = isEditMode.value
+        ? `${props.endpoint}/${data.get("id")}`
+        : props.endpoint;
+      response = await uploadFile(url, data, isEditMode.value);
     } else {
-      const response = await post(props.endpoint, formData, authStore.token);
-      emit("on-create", response);
+      if (isEditMode.value) {
+        response = await put(
+          `${props.endpoint}/${data.id}`,
+          data,
+          authStore.token
+        );
+      } else {
+        response = await post(props.endpoint, data, authStore.token);
+      }
+    }
+
+    if (isEditMode.value) {
+      emit("on-update", response);
+    } else {
+      const createdItem = response.plato || response;
+      emit("on-create", createdItem);
     }
 
     isFormModalOpen.value = false;
@@ -175,7 +202,7 @@ const handleSubmit = async (formData) => {
     console.error("Error saving data:", error);
     emit("on-error", {
       type: isEditMode.value ? "update" : "create",
-      error,
+      error: error.message || error,
     });
   }
 };
@@ -428,6 +455,7 @@ watch(serverParams, fetchData, { deep: true });
       :is-edit-mode="isEditMode"
       @close="isFormModalOpen = false"
       @submit="handleSubmit"
+      :endpoint="endpoint"
     />
   </div>
 </template>

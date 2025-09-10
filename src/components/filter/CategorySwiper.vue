@@ -16,7 +16,12 @@ const props = defineProps({
   },
 });
 
-defineEmits(["toggleCategory", "interactionStart", "interactionEnd"]);
+defineEmits([
+  "toggleCategory",
+  "interactionStart",
+  "interactionEnd",
+  "load-more",
+]);
 
 const modules = [Navigation];
 </script>
@@ -35,6 +40,7 @@ const modules = [Navigation];
       @touch-end="$emit('interactionEnd')"
       @mousedown="$emit('interactionStart')"
       @mouseup="$emit('interactionEnd')"
+      @reach-end="$emit('load-more')"
     >
       <SwiperSlide>
         <CategoryButton
