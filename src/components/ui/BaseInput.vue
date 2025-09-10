@@ -1,5 +1,5 @@
 <template>
-  <div class="form-group">
+  <div class="form-group" :class="{ 'light-theme': lightTheme }">
     <label v-if="label" :for="id">{{ label }}</label>
     <input
       :id="id"
@@ -25,6 +25,10 @@ defineProps({
   modelValue: [String, Number],
   placeholder: String,
   error: String,
+  lightTheme: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 defineEmits(["update:modelValue", "blur"]);
@@ -75,5 +79,37 @@ defineEmits(["update:modelValue", "blur"]);
   color: #ef4444;
   font-size: 0.8rem;
   margin-top: 0.3rem;
+}
+
+/* ========== ESTILOS PARA TEMA CLARO (CHECKOUT) ========== */
+.form-group.light-theme label {
+  color: #374151; /* Gris oscuro para mejor contraste con fondo claro */
+  font-size: 0.9rem;
+}
+
+.form-group.light-theme .base-input {
+  border: 2px solid #e5e7eb; /* Borde gris claro */
+  background: white; /* Fondo blanco sólido */
+  color: #1f2937; /* Texto oscuro para mejor legibilidad */
+}
+
+.form-group.light-theme .base-input::placeholder {
+  color: #9ca3af; /* Placeholder gris medio */
+}
+
+.form-group.light-theme .base-input:focus {
+  outline: none;
+  border-color: #3b82f6; /* Azul para estado de foco */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.form-group.light-theme .base-input.has-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-group.light-theme .error-text {
+  color: #dc2626; /* Rojo un poco más oscuro para tema claro */
 }
 </style>

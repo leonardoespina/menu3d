@@ -100,9 +100,9 @@
 </template>
 
 <script setup>
-import BaseInput from "../components/BaseInput.vue";
-import PasswordInput from "../components/PasswordInput.vue";
-import { useRegistrationForm } from "../composables/useRegistrationForm";
+import BaseInput from "../ui/BaseInput.vue";
+import PasswordInput from "../ui/PasswordInput.vue";
+import { useRegistrationForm } from "../../composables/useRegistrationForm.js";
 
 const { formData, v$, isLoading, serverError, successMessage, handleSubmit } =
   useRegistrationForm();
@@ -115,7 +115,7 @@ const { formData, v$, isLoading, serverError, successMessage, handleSubmit } =
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url("../assets/3.jpg") no-repeat center center;
+  background: url("../../assets/3.jpg") no-repeat center center;
   background-size: cover;
   z-index: 2000;
 }

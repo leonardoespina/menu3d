@@ -90,7 +90,8 @@ export const useMenuStore = defineStore("menu", () => {
 
   const setCategory = (categoryId) => {
     currentIndex.value = 0;
-    selectedCategory.value = categoryId;
+    // Asegurar que siempre sea string
+    selectedCategory.value = String(categoryId);
     searchQuery.value = "";
     currentPage.value = 1;
     fetchDishes(1, categoryId === "All" ? null : categoryId);

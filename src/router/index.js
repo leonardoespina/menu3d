@@ -11,9 +11,14 @@ const routes = [
   {
     path: "/register",
     name: "Register",
-    component: () => import("../components/RegisterScreen.vue"),
+    component: () => import("../components/views/RegisterScreen.vue"),
   },
-
+  {
+    path: "/admin/platos",
+    name: "plato-management",
+    component: () => import("../components/views/PlatoManagement.vue"),
+    meta: { requiresAuth: true }, // Solo para usuarios autenticados
+  },
   {
     path: "/login",
     name: "login",
@@ -24,7 +29,7 @@ const routes = [
   {
     path: "/menu",
     name: "menu",
-    component: () => import("../components/MenuScreen.vue"),
+    component: () => import("../components/views/MenuScreen.vue"),
     meta: { public: true }, // 3. Acceso público para todos
   },
   // --- Ejemplo de una ruta protegida ---

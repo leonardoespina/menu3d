@@ -25,7 +25,7 @@ const enterLogin = () => {
       <div class="mensaje">Gracias por tu visita</div>
       <a href="#" class="btn" @click.prevent="enterMenu">Entrar</a>
       <div class="registro">
-        ¿No tienes cuenta? <a href="#">Regístrate ahora</a>
+        <router-link to="/register">Regístrate ahora</router-link>
       </div>
       <div class="registro">
         Login <a href="#" @click.prevent="enterLogin">Accede Ahora</a>
