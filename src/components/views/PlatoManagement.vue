@@ -71,7 +71,6 @@ const columns = ref([
     sortable: false,
     filterable: false,
     editable: true,
-    required: true,
   },
 ]);
 
