@@ -1,5 +1,5 @@
 import { ref, reactive, computed } from "vue";
-import { post } from "../../api";
+import api from "../../api";
 
 export const useCheckout = ({ cartStore, paymentStore, emit }) => {
   const isOpen = ref(false);
@@ -164,6 +164,7 @@ export const useCheckout = ({ cartStore, paymentStore, emit }) => {
       paymentError.value = "Por favor, completa todos los campos requeridos.";
       return;
     }
+    paymentError.value = ""; // Limpiar errores previos
 
     try {
       const selectedBank = paymentStore.bancos.find(
@@ -187,7 +188,8 @@ export const useCheckout = ({ cartStore, paymentStore, emit }) => {
         })),
       };
 
-      const result = await post("/api/pedidos", orderData);
+      const response = await api.post("/api/pedidos", orderData);
+      const result = response.data;
 
       window.open(`https://wa.me/?text=${result.mensajeWhatsApp}`, "_blank");
 
@@ -205,7 +207,9 @@ export const useCheckout = ({ cartStore, paymentStore, emit }) => {
         `¡Pedido #${result.pedido.id} realizado con éxito! Se abrirá WhatsApp para que envíes el comprobante.`
       );
     } catch (error) {
-      paymentError.value = error.message || "Error al procesar el pedido";
+      // El interceptor ya mostró la notificación al usuario.
+      // Aquí solo manejamos la lógica específica del componente, como mostrar un mensaje local.
+      paymentError.value = "No se pudo procesar el pedido. Inténtalo de nuevo.";
       console.error("Order error:", error);
     }
   };

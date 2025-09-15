@@ -1,26 +1,25 @@
 // stores/payment.js
 import { defineStore } from "pinia";
-import { get } from "../api";
+import api from "../api";
 
 export const usePaymentStore = defineStore("payment", {
   state: () => ({
     bancos: [],
-    loading: false,
-    error: null,
+    // loading y error ya no son necesarios aquí, se manejan globalmente.
   }),
 
   actions: {
     async fetchBancos() {
-      this.loading = true;
-      this.error = null;
       try {
-        // Usar la función get del archivo api.js
-        this.bancos = await get("/api/bancos");
+        // La carga y el manejo de errores son automáticos por los interceptores.
+        const response = await api.get("/api/bancos");
+        this.bancos = response.data;
       } catch (error) {
-        this.error = error.message;
+        // El interceptor ya mostró una notificación.
+        // Solo registramos el error si es necesario para depuración.
         console.error("Error loading banks:", error);
-      } finally {
-        this.loading = false;
+        // Opcional: limpiar el estado en caso de error.
+        this.bancos = [];
       }
     },
   },

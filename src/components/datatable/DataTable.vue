@@ -2,7 +2,8 @@
 <script setup>
 import { ref, onMounted, watch, computed } from "vue";
 import { useAuthStore } from "../../stores/auth";
-import { get, post, put, del } from "../../api";
+import { useUIStore } from "../../stores/ui"; // Importar UI Store
+import api from "../../api"; // Importar la instancia de axios
 import { useFileUpload } from "../../composables/useFileUpload";
 import DataTableForm from "./DataTableForm.vue";
 
@@ -35,11 +36,16 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  columnFilter: {
+    type: Function,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["on-create", "on-update", "on-delete", "on-error"]);
 
 const authStore = useAuthStore();
+const uiStore = useUIStore(); // Usar UI Store
 const {
   uploadFile,
   isUploading,
@@ -47,7 +53,6 @@ const {
   uploadSuccess,
   resetUploadState,
 } = useFileUpload();
-const isLoading = ref(false);
 const isFormModalOpen = ref(false);
 const currentItem = ref(null);
 const isEditMode = ref(false);
@@ -61,37 +66,42 @@ const serverParams = ref({
   search: "",
 });
 
+const visibleColumns = computed(() => {
+  return props.columns.filter((column) => column.visible !== false);
+});
+
 // Datos de la tabla
 const rows = ref([]);
 
 // Obtener datos del servidor
 const fetchData = async () => {
-  isLoading.value = true;
+  // isLoading es manejado por el interceptor global
   try {
-    const params = new URLSearchParams({
+    const params = {
       page: serverParams.value.page,
       limit: serverParams.value.perPage,
       search: serverParams.value.search,
-    }).toString();
+    };
 
-    const response = await get(`${props.endpoint}?${params}`, authStore.token);
+    const response = await api.get(props.endpoint, { params });
+    const responseData = response.data;
 
     let data = [];
     let total = 0;
 
-    if (response.data && Array.isArray(response.data)) {
-      data = response.data;
-      total = response.total || response.data.length;
-    } else if (Array.isArray(response)) {
-      data = response;
-      total = response.length;
-    } else if (response && response.data && response.total !== undefined) {
-      // Manejar respuesta paginada del backend
-      data = response.data;
-      total = response.total;
+    if (responseData && Array.isArray(responseData.data)) {
+      // Estructura paginada como { data: [...], total: X }
+      data = responseData.data;
+      total = responseData.total;
+    } else if (Array.isArray(responseData)) {
+      // Respuesta es un array simple
+      data = responseData;
+      total = responseData.length;
     } else {
-      data = [];
-      total = 0;
+      console.warn(
+        "La respuesta de la API no tiene un formato esperado:",
+        responseData
+      );
     }
 
     rows.value = data;
@@ -104,10 +114,11 @@ const fetchData = async () => {
       serverParams.value.page = maxPage;
     }
   } catch (error) {
+    // El interceptor ya mostró la notificación
     console.error("Error fetching data:", error);
     emit("on-error", { type: "fetch", error });
-  } finally {
-    isLoading.value = false;
+    rows.value = [];
+    totalRecords.value = 0;
   }
 };
 
@@ -173,32 +184,33 @@ const handleSubmit = async (data) => {
     const isFormData = data instanceof FormData;
 
     if (isFormData) {
+      // useFileUpload probablemente necesite su propia instancia de axios o refactorización
+      // Por ahora, se asume que funciona o se refactorizará por separado.
       const url = isEditMode.value
         ? `${props.endpoint}/${data.get("id")}`
         : props.endpoint;
       response = await uploadFile(url, data, isEditMode.value);
     } else {
       if (isEditMode.value) {
-        response = await put(
-          `${props.endpoint}/${data.id}`,
-          data,
-          authStore.token
-        );
+        response = await api.put(`${props.endpoint}/${data.id}`, data);
       } else {
-        response = await post(props.endpoint, data, authStore.token);
+        response = await api.post(props.endpoint, data);
       }
     }
 
+    const responseData = response.data || response;
+
     if (isEditMode.value) {
-      emit("on-update", response);
+      emit("on-update", responseData);
     } else {
-      const createdItem = response.plato || response;
+      const createdItem = responseData.plato || responseData;
       emit("on-create", createdItem);
     }
 
     isFormModalOpen.value = false;
     fetchData();
   } catch (error) {
+    // El interceptor ya mostró la notificación
     console.error("Error saving data:", error);
     emit("on-error", {
       type: isEditMode.value ? "update" : "create",
@@ -214,10 +226,11 @@ const handleDelete = async (item) => {
   }
 
   try {
-    await del(`${props.endpoint}/${item.id}`, authStore.token);
+    await api.delete(`${props.endpoint}/${item.id}`);
     emit("on-delete", item);
     fetchData();
   } catch (error) {
+    // El interceptor ya mostró la notificación
     console.error("Error deleting data:", error);
     emit("on-error", { type: "delete", error });
   }
@@ -301,7 +314,7 @@ watch(serverParams, fetchData, { deep: true });
         <thead>
           <tr>
             <th
-              v-for="column in columns"
+              v-for="column in visibleColumns"
               :key="column.field"
               :class="'column-' + column.field"
             >
@@ -311,9 +324,9 @@ watch(serverParams, fetchData, { deep: true });
           </tr>
         </thead>
         <tbody>
-          <tr v-if="isLoading">
+          <tr v-if="uiStore.isLoading">
             <td
-              :colspan="columns.length + (editable || deletable ? 1 : 0)"
+              :colspan="visibleColumns.length + (editable || deletable ? 1 : 0)"
               class="loading-row"
             >
               Cargando datos...
@@ -321,7 +334,7 @@ watch(serverParams, fetchData, { deep: true });
           </tr>
           <tr v-else-if="transformedRows.length === 0">
             <td
-              :colspan="columns.length + (editable || deletable ? 1 : 0)"
+              :colspan="visibleColumns.length + (editable || deletable ? 1 : 0)"
               class="empty-row"
             >
               No se encontraron registros
@@ -329,7 +342,7 @@ watch(serverParams, fetchData, { deep: true });
           </tr>
           <tr v-else v-for="row in transformedRows" :key="row.id">
             <td
-              v-for="column in columns"
+              v-for="column in visibleColumns"
               :key="column.field"
               :class="'column-' + column.field"
             >
@@ -456,6 +469,7 @@ watch(serverParams, fetchData, { deep: true });
       @close="isFormModalOpen = false"
       @submit="handleSubmit"
       :endpoint="endpoint"
+      :column-filter="columnFilter"
     />
   </div>
 </template>

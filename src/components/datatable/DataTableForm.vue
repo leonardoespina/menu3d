@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import FileUpload from "../ui/FileUpload.vue";
 
 const props = defineProps({
@@ -7,6 +7,10 @@ const props = defineProps({
   columns: Array,
   item: Object,
   isEditMode: Boolean,
+  columnFilter: {
+    type: Function,
+    default: null,
+  },
 });
 
 const emit = defineEmits(["close", "submit"]);
@@ -14,6 +18,22 @@ const emit = defineEmits(["close", "submit"]);
 const formData = ref({});
 const errors = ref({});
 const selectedFile = ref(null);
+const fieldValidity = ref({});
+
+const filteredColumns = computed(() => {
+  if (props.columnFilter) {
+    // Filtramos solo las columnas que son editables o de solo lectura
+    const displayableColumns = props.columns.filter(
+      (c) => c.editable !== false || c.type === "readonly"
+    );
+    return displayableColumns.filter((column) =>
+      props.columnFilter(column, formData.value)
+    );
+  }
+  return props.columns.filter(
+    (c) => c.editable !== false || c.type === "readonly"
+  );
+});
 
 // Obtener el nombre real del campo para formulario
 const getFormFieldName = (column) => {
@@ -25,8 +45,16 @@ const initializeForm = () => {
   formData.value = {};
   errors.value = {};
   selectedFile.value = null;
+  fieldValidity.value = {};
 
   props.columns.forEach((column) => {
+    // Inicializar validez para componentes con validación personalizada
+    if (column.component && column.componentProps?.enableValidation) {
+      const fieldName = getFormFieldName(column);
+      // En modo de creación, la contraseña comienza como inválida.
+      // En modo de edición, se considera válida hasta que se modifica.
+      fieldValidity.value[fieldName] = !!props.isEditMode;
+    }
     const fieldName = getFormFieldName(column);
     if (props.isEditMode && props.item && props.item[fieldName] !== undefined) {
       formData.value[fieldName] = props.item[fieldName];
@@ -48,7 +76,7 @@ const initializeForm = () => {
 const validateForm = () => {
   errors.value = {};
   let isValid = true;
-  props.columns.forEach((column) => {
+  filteredColumns.value.forEach((column) => {
     if (column.editable !== false && column.required) {
       const fieldName = getFormFieldName(column);
       const value = formData.value[fieldName];
@@ -146,6 +174,49 @@ const getSelectValue = (column) => {
   const fieldName = getFormFieldName(column);
   return formData.value[fieldName] || "";
 };
+
+const handleValidityChange = (column, isValid) => {
+  const fieldName = getFormFieldName(column);
+  fieldValidity.value[fieldName] = isValid;
+};
+
+const isSubmitDisabled = computed(() => {
+  // 1. Validar campos requeridos básicos
+  for (const column of filteredColumns.value) {
+    if (column.editable !== false && column.required) {
+      const fieldName = getFormFieldName(column);
+      // En modo edición, la contraseña no es requerida si se deja en blanco
+      if (
+        props.isEditMode &&
+        fieldName === "password" &&
+        !formData.value[fieldName]
+      ) {
+        continue;
+      }
+      const value = formData.value[fieldName];
+      if (value === undefined || value === null || value === "") {
+        return true; // Deshabilitado si un campo requerido está vacío
+      }
+    }
+  }
+
+  // 2. Validar la validez de los componentes personalizados
+  for (const fieldName in fieldValidity.value) {
+    // Si estamos editando y la contraseña está vacía, ignoramos su validez (no se cambiará)
+    if (
+      props.isEditMode &&
+      fieldName === "password" &&
+      !formData.value[fieldName]
+    ) {
+      continue;
+    }
+    if (!fieldValidity.value[fieldName]) {
+      return true; // Deshabilitado si un componente es inválido
+    }
+  }
+
+  return false; // Habilitado
+});
 </script>
 
 <template>
@@ -171,7 +242,7 @@ const getSelectValue = (column) => {
       <div class="modal-body">
         <form @submit.prevent="handleSubmit" class="form">
           <div
-            v-for="column in columns"
+            v-for="column in filteredColumns"
             :key="column.field"
             class="form-group"
             :class="{ 'not-editable': column.editable === false }"
@@ -233,6 +304,19 @@ const getSelectValue = (column) => {
               </select>
             </template>
 
+            <!-- Renderizar componente dinámico si se especifica -->
+            <template v-else-if="column.component">
+              <component
+                :is="column.component"
+                :id="column.field"
+                :modelValue="formData[getFormFieldName(column)]"
+                @update:modelValue="formData[getFormFieldName(column)] = $event"
+                @update:valid="handleValidityChange(column, $event)"
+                :error="errors[getFormFieldName(column)]"
+                v-bind="column.componentProps"
+              />
+            </template>
+
             <template v-else>
               <input
                 v-if="
@@ -284,7 +368,11 @@ const getSelectValue = (column) => {
 
       <div class="modal-footer">
         <button @click="closeModal" class="cancel-button">Cancelar</button>
-        <button @click="handleSubmit" class="submit-button">
+        <button
+          @click="handleSubmit"
+          class="submit-button"
+          :disabled="isSubmitDisabled"
+        >
           {{ isEditMode ? "Actualizar" : "Crear" }}
         </button>
       </div>
@@ -440,9 +528,14 @@ select.error {
   font-size: 0.9rem;
   transition: all 0.2s ease;
 }
-.submit-button:hover {
+.submit-button:hover:not(:disabled) {
   background: #1e40af;
   transform: translateY(-1px);
+}
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 @media (max-width: 768px) {
   .modal-content {

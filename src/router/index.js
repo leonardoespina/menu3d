@@ -20,6 +20,24 @@ const routes = [
     meta: { requiresAuth: true }, // Solo para usuarios autenticados
   },
   {
+    path: "/admin/categorias",
+    name: "categoria-management",
+    component: () => import("../components/views/CategoriaManagement.vue"),
+    meta: { requiresAuth: true }, // Solo para usuarios autenticados
+  },
+  {
+    path: "/admin/bancos",
+    name: "bancos-management",
+    component: () => import("../components/views/BancoManagement.vue"),
+    meta: { requiresAuth: true }, // Solo para usuarios autenticados
+  },
+  {
+    path: "/admin/usuarios",
+    name: "usuarios-management",
+    component: () => import("../components/views/UserScreen.vue"),
+    meta: { requiresAuth: true }, // Solo para usuarios autenticados
+  },
+  {
     path: "/login",
     name: "login",
     component: () => import("../components/Login.vue"),

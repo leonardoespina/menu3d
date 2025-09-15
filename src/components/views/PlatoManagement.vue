@@ -5,11 +5,12 @@ import DataTable from "../../components/datatable/DataTable.vue";
 import BaseMenu from "../../components/basemenu/BaseMenu.vue";
 import backgroundImage from "../../assets/3.jpg";
 import { useCategories } from "../../composables/useCategories";
-import { useNotifications } from "../../composables/useNotifications"; // 1. Importar el composable
+import { useCrudHandlers } from "../../composables/useCrudHandlers";
 
 const authStore = useAuthStore();
 const { categories, loading, error, loadCategories } = useCategories();
-const { addNotification } = useNotifications(); // 2. Destructurar la función addNotification
+const { handleCreate, handleUpdate, handleDelete, handleError } =
+  useCrudHandlers("Plato");
 
 // Configuración de columnas para la tabla de platos
 const columns = ref([
@@ -70,6 +71,7 @@ const columns = ref([
     sortable: false,
     filterable: false,
     editable: true,
+    required: true,
   },
 ]);
 
@@ -98,29 +100,6 @@ watch(categories, (newCategories) => {
   }
 });
 
-const handleCreate = (newItem) => {
-  console.log("Plato creado:", newItem);
-  // Si el backend devuelve { plato: {...} }, usar newItem.plato
-  const createdPlato = newItem.plato || newItem;
-  addNotification("¡Plato creado exitosamente!", "success");
-};
-
-const handleUpdate = (updatedItem) => {
-  console.log("Plato actualizado:", updatedItem);
-  addNotification("¡Plato actualizado exitosamente!", "success");
-};
-
-const handleDelete = (deletedItem) => {
-  console.log("Plato eliminado:", deletedItem);
-  addNotification("¡Plato eliminado exitosamente!", "success");
-};
-
-const handleError = (errorInfo) => {
-  console.error("Error en operación:", errorInfo);
-  const errorMessage =
-    errorInfo.error?.message || errorInfo.error || "Error desconocido";
-  addNotification(`Error en ${errorInfo.type}: ${errorMessage}`, "error");
-};
 // Cargar categorías al montar el componente
 onMounted(() => {
   loadCategories();

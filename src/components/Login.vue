@@ -19,6 +19,7 @@
               v-model="username"
               placeholder="Ingresa tu usuario"
               class="login-input"
+              autocomplete="username"
             />
           </div>
 
@@ -30,6 +31,7 @@
               v-model="password"
               placeholder="Ingresa tu contraseña"
               class="login-input"
+              autocomplete="current-password"
             />
             <button
               type="button"

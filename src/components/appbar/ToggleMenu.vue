@@ -25,10 +25,6 @@ const closeMenu = () => {
 };
 
 // Navegar a la gestión de platos
-const navigateToPlatoManagement = () => {
-  closeMenu();
-  router.push("/admin/platos");
-};
 
 // Emitir evento para el menú lateral (si es necesario)
 const emit = defineEmits(["toggle-menu"]);
@@ -57,7 +53,7 @@ const emit = defineEmits(["toggle-menu"]);
     <!-- Menú desplegable solo para administradores -->
     <transition name="fade-slide">
       <div v-if="isAdmin && isMenuOpen" class="toggle-menu-dropdown">
-        <button class="menu-item" @click="navigateToPlatoManagement">
+        <router-link to="/admin/platos" class="menu-item">
           <svg
             viewBox="0 0 24 24"
             width="16"
@@ -75,7 +71,57 @@ const emit = defineEmits(["toggle-menu"]);
             <polyline points="10 9 9 9 8 9" />
           </svg>
           <span>Gestión de Platos</span>
-        </button>
+        </router-link>
+        <router-link to="/admin/usuarios" class="menu-item">
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Gestión de Usuarios</span>
+        </router-link>
+        <router-link to="/admin/categorias" class="menu-item">
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="4"></rect>
+            <rect x="3" y="10" width="18" height="4"></rect>
+            <rect x="3" y="17" width="18" height="4"></rect>
+          </svg>
+          <span>Gestión de Categorías</span>
+        </router-link>
+        <router-link to="/admin/bancos" class="menu-item">
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="4"></rect>
+            <rect x="3" y="10" width="18" height="4"></rect>
+            <rect x="3" y="17" width="18" height="4"></rect>
+          </svg>
+          <span>Gestion Banco</span>
+        </router-link>
       </div>
     </transition>
 
@@ -133,7 +179,7 @@ const emit = defineEmits(["toggle-menu"]);
 .menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: -13px;
   width: 100%;
   padding: 12px 15px;
   color: rgb(0, 0, 0);

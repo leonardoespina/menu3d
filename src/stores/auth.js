@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import { post } from "../api";
+import api from "../api"; // Importar la instancia de Axios
 
 export const useAuthStore = defineStore("auth", () => {
   const user = ref(null);
@@ -9,42 +9,40 @@ export const useAuthStore = defineStore("auth", () => {
 
   const login = async (credentials) => {
     try {
-      const response = await post("/api/auth/login", credentials);
+      const response = await api.post("/api/auth/login", credentials);
+      const responseData = response.data;
 
-      if (response.token && response.usuario) {
-        token.value = response.token;
-        user.value = response.usuario;
+      if (responseData.token && responseData.usuario) {
+        token.value = responseData.token;
+        user.value = responseData.usuario;
         isAuthenticated.value = true;
 
-        // Guardar en localStorage
-        localStorage.setItem("token", response.token);
-        localStorage.setItem("user", JSON.stringify(response.usuario));
+        localStorage.setItem("token", responseData.token);
+        localStorage.setItem("user", JSON.stringify(responseData.usuario));
 
-        return { success: true, data: response };
+        return { success: true, data: responseData };
       }
+      // No es necesario un 'else', si la respuesta no es la esperada,
+      // el interceptor de errores ya habrá actuado si hubo un código de error.
     } catch (error) {
-      console.error("Error en login:", error);
-      return {
-        success: false,
-        error: error.message || "Error al iniciar sesión",
-      };
+      // El interceptor ya manejó la notificación de UI.
+      // Opcionalmente, puedes registrar el error o devolver un estado de fallo.
+      console.error("Fallo la autenticación:", error);
+      return { success: false, error: "Credenciales inválidas" };
     }
   };
 
   // Nueva función de registro
   const register = async (userData) => {
     try {
-      const response = await post("/api/auth/register", userData);
-
-      if (response.message) {
-        return { success: true, data: response };
-      }
+      const response = await api.post("/api/auth/register", userData);
+      // Si la petición es exitosa (2xx), simplemente devolvemos éxito.
+      // El interceptor se encarga del resto.
+      return { success: true, data: response.data };
     } catch (error) {
-      console.error("Error en registro:", error);
-      return {
-        success: false,
-        error: error.message || "Error al crear la cuenta",
-      };
+      // El interceptor ya mostró el error al usuario.
+      console.error("Fallo el registro:", error);
+      return { success: false, error: "No se pudo completar el registro" };
     }
   };
 

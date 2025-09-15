@@ -69,6 +69,8 @@
             placeholder="Crea una contraseña segura"
             :error="v$.password.$errors[0]?.$message"
             @blur="v$.password.$touch"
+            :enable-validation="true"
+            @update:valid="isPasswordStrong = $event"
           />
 
           <PasswordInput
@@ -80,7 +82,11 @@
             @blur="v$.confirmPassword.$touch"
           />
 
-          <button type="submit" class="register-button" :disabled="isLoading">
+          <button
+            type="submit"
+            class="register-button"
+            :disabled="isLoading || v$.$invalid || !isPasswordStrong"
+          >
             <span v-if="isLoading">Creando cuenta...</span>
             <span v-else>Crear Cuenta</span>
           </button>
@@ -100,12 +106,15 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import BaseInput from "../ui/BaseInput.vue";
 import PasswordInput from "../ui/PasswordInput.vue";
 import { useRegistrationForm } from "../../composables/useRegistrationForm.js";
 
 const { formData, v$, isLoading, serverError, successMessage, handleSubmit } =
   useRegistrationForm();
+
+const isPasswordStrong = ref(false);
 </script>
 
 <style scoped>

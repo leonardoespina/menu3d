@@ -14,11 +14,35 @@
       >
         <div class="bank-info">
           <h4>{{ bank.nombre }}</h4>
-          <p>{{ bank.tipo_cuenta }} - {{ bank.cedula_rif }}</p>
-          <p v-if="bank.tipo_pago.toLowerCase() === 'pago móvil'">
-            Pago Móvil: {{ bank.telefono }} - {{ bank.banco_asociado }}
-          </p>
-          <p v-else>{{ bank.tipo_pago }}</p>
+
+          <!-- Caso Transferencia -->
+          <div v-if="bank.tipo_pago.toLowerCase() === 'transferencia'">
+            <p><strong>Cuenta:</strong> {{ bank.numero_cta }}</p>
+            <p><strong>Tipo:</strong> {{ bank.tipo_cuenta }}</p>
+            <p><strong>CI/Rif:</strong> {{ bank.cedula_asociada }}</p>
+            <p><strong>Banco:</strong> {{ bank.banco_asociado }}</p>
+          </div>
+
+          <!-- Caso Pago Móvil -->
+          <div
+            v-else-if="
+              bank.tipo_pago.toLowerCase() === 'pago_movil' ||
+              bank.tipo_pago.toLowerCase() === 'pago_movil'
+            "
+          >
+            <p><strong>CI/Rif:</strong> {{ bank.cedula_asociada }}</p>
+            <p><strong>Teléfono:</strong> {{ bank.telefono }}</p>
+            <p><strong>Banco:</strong> {{ bank.banco_asociado }}</p>
+          </div>
+
+          <!-- Otros casos -->
+          <div v-else>
+            <p><strong>Email:</strong> {{ bank.email }}</p>
+            <p>
+              <strong>Método:</strong>
+              {{ bank.tipo_pago }}
+            </p>
+          </div>
         </div>
         <div class="checkmark" v-if="selectedBankId === bank.id">✓</div>
       </div>

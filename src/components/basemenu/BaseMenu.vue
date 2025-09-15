@@ -11,47 +11,41 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: "BaseMenu",
-  props: {
-    backgroundImage: {
-      type: String,
-      default: "",
-    },
-    blurAmount: {
-      type: String,
-      default: "3px",
-    },
+<script setup>
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+
+const props = defineProps({
+  backgroundImage: {
+    type: String,
+    default: "",
   },
-  data() {
-    return {
-      isMobile: false,
-    };
+  blurAmount: {
+    type: String,
+    default: "3px",
   },
-  mounted() {
-    this.checkScreenSize();
-    window.addEventListener("resize", this.checkScreenSize);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.checkScreenSize);
-  },
-  methods: {
-    checkScreenSize() {
-      this.isMobile = window.innerWidth <= 768;
-    },
-  },
-  computed: {
-    menuStyle() {
-      return {
-        "background-image": this.backgroundImage
-          ? `url(${this.backgroundImage})`
-          : "",
-        "--blur-amount": this.blurAmount,
-      };
-    },
-  },
+});
+
+const isMobile = ref(false);
+
+const checkScreenSize = () => {
+  isMobile.value = window.innerWidth <= 768;
 };
+
+onMounted(() => {
+  checkScreenSize();
+  window.addEventListener("resize", checkScreenSize);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", checkScreenSize);
+});
+
+const menuStyle = computed(() => ({
+  "background-image": props.backgroundImage
+    ? `url(${props.backgroundImage})`
+    : "",
+  "--blur-amount": props.blurAmount,
+}));
 </script>
 
 <style scoped>
@@ -89,10 +83,10 @@ export default {
 .menu-container {
   position: relative;
   z-index: 2;
-  width: 90%;
+  width: 100%;
   max-width: 720px;
-  height: auto;
-  max-height: 90vh;
+  height: 97%;
+  max-height: 100vh;
   background: var(--container-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
