@@ -9,7 +9,7 @@
       class="file-input"
       ref="fileInput"
     />
-    
+
     <label :for="id" class="file-upload-label">
       <div class="upload-content">
         <svg
@@ -27,14 +27,10 @@
         <span>{{ label }}</span>
       </div>
     </label>
-    
+
     <div v-if="selectedFile" class="file-info">
       <span class="file-name">{{ selectedFile.name }}</span>
-      <button 
-        @click="removeFile" 
-        class="remove-file-button"
-        type="button"
-      >
+      <button @click="removeFile" class="remove-file-button" type="button">
         <svg
           viewBox="0 0 24 24"
           width="16"
@@ -48,14 +44,7 @@
         </svg>
       </button>
     </div>
-    
-    <ProgressBar
-      v-if="showProgress"
-      :progress="progress"
-      :message="progressMessage"
-      :error="!!error"
-    />
-    
+
     <div v-if="error" class="error-message">
       {{ error }}
     </div>
@@ -63,68 +52,57 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import ProgressBar from './ProgressBar.vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
   id: {
     type: String,
-    default: 'file-upload'
+    default: "file-upload",
   },
   accept: {
     type: String,
-    default: '.glb'
+    default: ".glb",
   },
   label: {
     type: String,
-    default: 'Seleccionar archivo'
-  },
-  progress: {
-    type: Number,
-    default: 0
+    default: "Seleccionar archivo",
   },
   error: {
     type: String,
-    default: ''
+    default: "",
   },
   showProgress: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['file-selected', 'file-removed'])
+const emit = defineEmits(["file-selected", "file-removed"]);
 
-const fileInput = ref(null)
-const selectedFile = ref(null)
-
-const progressMessage = computed(() => {
-  if (props.progress === 0) return 'Preparando subida...'
-  if (props.progress === 100) return '¡Subida completada!'
-  return `Subiendo... ${props.progress}%`
-})
+const fileInput = ref(null);
+const selectedFile = ref(null);
 
 const handleFileSelect = (event) => {
-  const file = event.target.files[0]
+  const file = event.target.files[0];
   if (file) {
     // Validar tipo de archivo
-    if (props.accept && !file.name.toLowerCase().endsWith('.glb')) {
-      emit('file-selected', null)
-      return
+    if (props.accept && !file.name.toLowerCase().endsWith(".glb")) {
+      emit("file-selected", null);
+      return;
     }
-    
-    selectedFile.value = file
-    emit('file-selected', file)
+
+    selectedFile.value = file;
+    emit("file-selected", file);
   }
-}
+};
 
 const removeFile = () => {
-  selectedFile.value = null
+  selectedFile.value = null;
   if (fileInput.value) {
-    fileInput.value.value = ''
+    fileInput.value.value = "";
   }
-  emit('file-removed')
-}
+  emit("file-removed");
+};
 </script>
 
 <style scoped>

@@ -26,6 +26,12 @@ const routes = [
     meta: { requiresAuth: true }, // Solo para usuarios autenticados
   },
   {
+    path: "/admin/empresa",
+    name: "empresa-management",
+    component: () => import("../components/views/EmpresaManagement.vue"),
+    meta: { requiresAuth: true }, // Solo para usuarios autenticados
+  },
+  {
     path: "/admin/bancos",
     name: "bancos-management",
     component: () => import("../components/views/BancoManagement.vue"),

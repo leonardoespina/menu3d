@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from "vue";
 import { useUIStore } from "./stores/ui";
-import ProgressBar from "./components/ui/ProgressBar.vue";
+import PageLoader from "./components/ui/PageLoader.vue";
 import Notifications from "./components/ui/Notifications.vue";
 
 const uiStore = useUIStore();
@@ -18,7 +18,7 @@ onMounted(() => {
 
 <template>
   <div id="app">
-    <ProgressBar v-if="uiStore.isLoading" />
+    <PageLoader v-if="uiStore.isLoading" />
     <div class="content-wrapper">
       <router-view />
       <Notifications />

@@ -42,7 +42,7 @@ const navigateToHome = () => {
     <div class="center-section">
       <AppBarSearch
         v-model="menuStore.searchQuery"
-        @update:modelValue="menuStore.setSearchQuery"
+        @search="menuStore.setSearchQuery"
         placeholder="Buscar plato..."
       />
     </div>
@@ -84,12 +84,26 @@ const navigateToHome = () => {
   flex: 1;
   max-width: 500px;
   margin: 0 15px;
+  justify-content: center; /* Centra el contenido horizontalmente */
 }
 
 /* Media queries para responsividad */
 @media (max-width: 768px) {
+  .app-bar {
+    padding: 10px 8px; /* Reducir el padding general */
+  }
+
+  .left-section,
+  .right-section {
+    gap: 5px; /* Reducir el espacio entre íconos */
+    flex-shrink: 0; /* Evitar que estas secciones se encojan */
+  }
+
   .center-section {
-    margin: 0 10px;
+    flex: 1 1 auto; /* Permitir que se encoja si es necesario */
+    min-width: 0; /* Evitar que el contenido interno desborde */
+    margin: 0 8px;
+    max-width: 200px; /* Limitar el ancho máximo en móviles */
   }
 }
 </style>
