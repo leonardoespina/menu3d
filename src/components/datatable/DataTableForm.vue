@@ -119,12 +119,19 @@ const handleSubmit = () => {
 
   if (selectedFile.value) {
     const formDataToSend = new FormData();
+    const fileColumn = props.columns.find((c) => c.type === "file");
+    const fileFieldName = fileColumn ? fileColumn.field : "imagen"; // Fallback a 'imagen'
+
     Object.keys(submitData).forEach((key) => {
-      if (key !== "imagen") {
-        formDataToSend.append(key, submitData[key]);
+      if (key !== fileFieldName) {
+        // Asegurarse de que los valores nulos o indefinidos se manejen
+        if (submitData[key] !== null && submitData[key] !== undefined) {
+          formDataToSend.append(key, submitData[key]);
+        }
       }
     });
-    formDataToSend.append("imagen", selectedFile.value);
+
+    formDataToSend.append(fileFieldName, selectedFile.value);
     emit("submit", formDataToSend);
   } else {
     emit("submit", submitData);

@@ -82,11 +82,31 @@ const emit = defineEmits(["file-selected", "file-removed"]);
 const fileInput = ref(null);
 const selectedFile = ref(null);
 
+const isValidFileType = (file, accept) => {
+  if (!accept) return true;
+
+  const acceptedTypes = accept.split(",").map((t) => t.trim().toLowerCase());
+  const fileName = file.name.toLowerCase();
+  const fileType = file.type.toLowerCase();
+
+  return acceptedTypes.some((type) => {
+    if (type.startsWith(".")) {
+      return fileName.endsWith(type);
+    }
+    if (type.includes("/*")) {
+      return fileType.startsWith(type.replace("/*", ""));
+    }
+    return fileType === type;
+  });
+};
+
 const handleFileSelect = (event) => {
   const file = event.target.files[0];
   if (file) {
-    // Validar tipo de archivo
-    if (props.accept && !file.name.toLowerCase().endsWith(".glb")) {
+    if (!isValidFileType(file, props.accept)) {
+      console.error(`Invalid file type. Accepted types are: ${props.accept}`);
+      event.target.value = "";
+      selectedFile.value = null;
       emit("file-selected", null);
       return;
     }
