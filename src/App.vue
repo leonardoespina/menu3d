@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { useUIStore } from "./stores/ui";
 import PageLoader from "./components/ui/PageLoader.vue";
 import Notifications from "./components/ui/Notifications.vue";
+import "./style.css";
 
 const uiStore = useUIStore();
 

@@ -69,7 +69,7 @@ export const useFileUpload = () => {
         });
 
         const API_BASE_URL =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+          import.meta.env.VITE_API_BASE_URL || "https://api-menu3d.vercel.app";
         const cleanUrl = url.startsWith("/") ? url : `/${url}`;
         const cleanApiBase = API_BASE_URL.endsWith("/")
           ? API_BASE_URL.slice(0, -1)
