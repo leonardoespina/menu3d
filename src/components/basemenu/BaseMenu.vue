@@ -70,6 +70,7 @@ const menuStyle = computed(() => ({
   background-size: cover;
   z-index: 2000;
   padding: 1rem;
+  box-sizing: border-box;
 }
 
 #menu-screen::before {
@@ -85,8 +86,7 @@ const menuStyle = computed(() => ({
   z-index: 2;
   width: 100%;
   max-width: 720px;
-  height: 97%;
-  max-height: 100vh;
+  height: 100%;
   background: var(--container-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -139,12 +139,6 @@ const menuStyle = computed(() => ({
 
 .content-wrapper::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
-}
-
-@media (max-height: 700px) {
-  .menu-container {
-    max-height: 100vh;
-  }
 }
 
 /* Para dispositivos muy pequeños en orientación vertical */

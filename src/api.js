@@ -4,6 +4,7 @@ import { useAuthStore } from "./stores/auth";
 
 export const API_BASE_URL = "http://localhost:5000";
 //export const API_BASE_URL = "https://jc20pgnt-5000.use2.devtunnels.ms";
+//export const API_BASE_URL = "http://192.168.1.108:5000";
 export const UPLOADS_BASE_URL = `${API_BASE_URL}/uploads/`;
 
 const api = axios.create({

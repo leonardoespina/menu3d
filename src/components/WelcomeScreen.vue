@@ -1,10 +1,9 @@
 <script setup>
-//import { useMenuStore } from "../stores/menu";
 import { useRouter } from "vue-router";
-
-//const menuStore = useMenuStore();
+import { useEmpresa } from "../composables/useEmpresa";
 
 const router = useRouter();
+const { empresa, getLogoUrl } = useEmpresa();
 
 const enterMenu = () => {
   router.push("/menu");
@@ -16,11 +15,15 @@ const enterLogin = () => {
 
 <template>
   <div id="welcome-screen">
-    <div class="login-container">
-      <div class="titulo">Tu Restaurante</div>
+    <div v-if="empresa" class="login-container">
+      <div class="titulo">{{ empresa.nombre }}</div>
+      <div class="welcome-footer">Rif:{{ empresa.rif }}</div>
       <div class="subtitulo">Bienvenidos</div>
       <div class="imagen-circular">
-        <img src="../assets/3.jpg" alt="Plato principal" />
+        <img
+          :src="getLogoUrl(empresa.logo)"
+          :alt="'Logo de ' + empresa.nombre"
+        />
       </div>
       <div class="mensaje">Gracias por tu visita</div>
       <a href="#" class="btn" @click.prevent="enterMenu">Entrar</a>
@@ -30,6 +33,14 @@ const enterLogin = () => {
       <div class="registro">
         Login <a href="#" @click.prevent="enterLogin">Accede Ahora</a>
       </div>
+      <footer class="welcome-footer">
+        <p>{{ empresa.direccion }}</p>
+        <p>Teléfono: {{ empresa.telefono }}</p>
+      </footer>
+    </div>
+    <!-- Opcional: Mostrar un estado de carga mientras se obtienen los datos -->
+    <div v-else class="loading-container">
+      <p>Cargando...</p>
     </div>
   </div>
 </template>
@@ -155,5 +166,23 @@ const enterLogin = () => {
 
 @media (min-width: 768px) {
   /* Puedes añadir ajustes específicos para tablets aquí si es necesario */
+}
+
+.welcome-footer {
+  margin-top: 25px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.welcome-footer p {
+  margin: 5px 0;
+}
+
+.loading-container {
+  color: white;
+  font-size: 1.5rem;
 }
 </style>

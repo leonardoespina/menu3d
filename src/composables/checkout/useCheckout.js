@@ -191,7 +191,8 @@ export const useCheckout = ({ cartStore, paymentStore, emit }) => {
       const response = await api.post("/api/pedidos", orderData);
       const result = response.data;
 
-      window.open(`https://wa.me/?text=${result.mensajeWhatsApp}`, "_blank");
+      // Usar la URL de WhatsApp proporcionada por el backend
+      window.open(result.whatsappUrl, "_blank");
 
       emit("orderConfirmed", {
         orderId: result.pedido.id,
