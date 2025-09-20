@@ -13,7 +13,7 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
-  base: "/menu3d/",
+  base: process.env.NODE_ENV === "production" ? "/menu3d/" : "/",
   build: {
     outDir: "dist",
     assetsDir: "assets",
