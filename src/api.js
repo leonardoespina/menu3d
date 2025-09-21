@@ -2,10 +2,10 @@ import axios from "axios";
 import { useUIStore } from "./stores/ui";
 import { useAuthStore } from "./stores/auth";
 
-//export const API_BASE_URL = "https://api-menu3d.vercel.app";
+export const API_BASE_URL = "https://api-menu3d.vercel.app";
 //export const API_BASE_URL = "https://jc20pgnt-5000.use2.devtunnels.ms";
 //export const API_BASE_URL = "http://192.168.1.108:5000";
-export const API_BASE_URL = "http://localhost:5000";
+//export const API_BASE_URL = "http://localhost:5000";
 //export const UPLOADS_BASE_URL = `${API_BASE_URL}/uploads/`;
 export const UPLOADS_BASE_URL = `https://eetgxoanfvytdavmjuvo.supabase.co/storage/v1/object/public/uploads/`;
 
