@@ -125,13 +125,7 @@ const requiresReference = computed(() => {
 
   if (!selectedBank) return false;
 
-  const methodsRequiringReference = [
-    "transferencia",
-    "pago_movil",
-    "pago móvil",
-    "zelle",
-    "paypal",
-  ];
+  const methodsRequiringReference = ["transferencia", "pago_movil"];
 
   return methodsRequiringReference.includes(
     selectedBank.tipo_pago?.toLowerCase()

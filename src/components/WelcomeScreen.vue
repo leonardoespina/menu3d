@@ -1,46 +1,156 @@
 <script setup>
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useEmpresa } from "../composables/useEmpresa";
 
 const router = useRouter();
 const { empresa, getLogoUrl } = useEmpresa();
+const isLoading = ref(true);
+const hasError = ref(false);
+const errorMessage = ref("");
+
+// Datos por defecto para cuando no hay información de la empresa
+const empresaDefault = {
+  nombre: "Mi Empresa",
+  rif: "J-123456789",
+  direccion: "Av. Principal, Centro Comercial XYZ, Local #5",
+  telefono: "+58 412-1234567",
+  imagen: "default-logo.png",
+};
+
+// Función para verificar si los datos de empresa son válidos
+const esEmpresaValida = (emp) => {
+  return (
+    emp &&
+    emp.nombre &&
+    emp.nombre !== empresaDefault.nombre &&
+    Object.keys(emp).length > 0
+  );
+};
+
+// Cargar datos al montar el componente
+onMounted(async () => {
+  try {
+    // Esperar un momento para permitir que los datos se carguen
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Verificar si ya tenemos datos válidos de empresa
+    if (empresa.value && esEmpresaValida(empresa.value)) {
+      hasError.value = false;
+    } else {
+      hasError.value = true;
+      errorMessage.value = "Usando datos de demostración";
+    }
+  } catch (error) {
+    console.error("Error verificando datos de la empresa:", error);
+    hasError.value = true;
+    errorMessage.value = "Error cargando datos, usando información por defecto";
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+// Watch para cambios en los datos de empresa
+watch(
+  empresa,
+  (newEmpresa) => {
+    if (newEmpresa && esEmpresaValida(newEmpresa)) {
+      hasError.value = false;
+    }
+  },
+  { immediate: true }
+);
 
 const enterMenu = () => {
   router.push("/menu");
 };
+
 const enterLogin = () => {
   router.push("/login");
+};
+
+// Función para recargar la página
+const reloadPage = () => {
+  window.location.reload();
+};
+
+// Función para manejar errores de imagen
+const handleImageError = (event) => {
+  console.log("Error cargando imagen del logo");
+  // Podrías establecer una imagen por defecto aquí si lo deseas
+  // event.target.src = '/images/default-logo.png';
+};
+
+// Función para obtener la empresa actual o la por defecto
+const empresaActual = () => {
+  // Si tenemos empresa válida, usarla
+  if (empresa.value && esEmpresaValida(empresa.value)) {
+    return empresa.value;
+  }
+  // Si no, usar datos por defecto
+  return empresaDefault;
+};
+
+// Función para obtener la URL del logo
+const obtenerLogo = () => {
+  const emp = empresaActual();
+
+  // Si getLogoUrl existe y es una función, usarla
+  if (typeof getLogoUrl === "function") {
+    return getLogoUrl(emp.imagen);
+  }
+
+  // Si no, devolver la imagen directamente o una por defecto
+  return emp.imagen || "/images/default-logo.png";
 };
 </script>
 
 <template>
   <div id="welcome-screen">
-    <div v-if="empresa" class="login-container">
-      <div class="titulo">{{ empresa.nombre }}</div>
-      <div class="welcome-footer">Rif:{{ empresa.rif }}</div>
+    <!-- Estado de carga -->
+    <div v-if="isLoading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Cargando información...</p>
+    </div>
+
+    <!-- Contenido principal -->
+    <div v-else class="login-container">
+      <!-- Solo mostrar advertencia si realmente estamos usando datos por defecto -->
+      <div
+        v-if="hasError && (!empresa || !esEmpresaValida(empresa))"
+        class="data-warning"
+      >
+        <span>⚠️ Usando datos de demostración</span>
+      </div>
+
+      <div class="titulo">{{ empresaActual().nombre }}</div>
+      <div class="welcome-footer">Rif: {{ empresaActual().rif }}</div>
       <div class="subtitulo">Bienvenidos</div>
+
       <div class="imagen-circular">
         <img
-          :src="getLogoUrl(empresa.imagen)"
-          :alt="'Logo de ' + empresa.nombre"
+          :src="obtenerLogo()"
+          :alt="'Logo de ' + empresaActual().nombre"
+          @error="handleImageError"
         />
       </div>
+
       <div class="mensaje">Gracias por tu visita</div>
+
       <a href="#" class="btn" @click.prevent="enterMenu">Entrar</a>
+
       <div class="registro">
         <router-link to="/register">Regístrate ahora</router-link>
       </div>
+
       <div class="registro">
         Login <a href="#" @click.prevent="enterLogin">Accede Ahora</a>
       </div>
+
       <footer class="welcome-footer">
-        <p>{{ empresa.direccion }}</p>
-        <p>Teléfono: {{ empresa.telefono }}</p>
+        <p>{{ empresaActual().direccion }}</p>
+        <p>Teléfono: {{ empresaActual().telefono }}</p>
       </footer>
-    </div>
-    <!-- Opcional: Mostrar un estado de carga mientras se obtienen los datos -->
-    <div v-else class="loading-container">
-      <p>Cargando...</p>
     </div>
   </div>
 </template>
@@ -61,13 +171,8 @@ const enterLogin = () => {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(
-    0,
-    0,
-    0,
-    0.5
-  ); /* Reducido de 0.6 a 0.5 para mayor visibilidad del fondo */
-  backdrop-filter: blur(3px); /* Reducido de 5px a 3px para menos desenfoque */
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
 }
 
 .login-container {
@@ -75,21 +180,33 @@ const enterLogin = () => {
   z-index: 2;
   width: 90%;
   max-width: 520px;
-  background: rgba(0, 0, 0, 0.3); /* Reducida opacidad de 0.5 a 0.3 */
-  backdrop-filter: blur(0px); /* Reducido de 15px a 10px */
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); /* Reducida intensidad de sombra */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Reducido contorno blanco */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.data-warning {
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.5);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #ffc107;
 }
 
 .titulo {
   font-family: "Dancing Script", cursive;
   font-size: 3.5rem;
   color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Mejorado contraste */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   margin-bottom: 10px;
   text-align: center;
 }
@@ -97,7 +214,7 @@ const enterLogin = () => {
 .subtitulo {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  color: rgba(255, 255, 255, 0.95); /* Aumentado contraste */
+  color: rgba(255, 255, 255, 0.95);
   text-align: center;
   font-weight: 500;
 }
@@ -108,27 +225,33 @@ const enterLogin = () => {
   margin: 0 auto 20px;
   border-radius: 50%;
   overflow: hidden;
-  border: 3px solid rgba(255, 255, 255, 0.4); /* Reducido contorno */
+  border: 3px solid rgba(255, 255, 255, 0.4);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.imagen-circular:hover {
+  transform: scale(1.05);
 }
 
 .imagen-circular img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.3s ease;
 }
 
 .mensaje {
   margin: 15px 0;
   font-size: 1.2rem;
-  color: rgba(255, 255, 255, 0.9); /* Aumentado contraste */
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
   font-weight: 500;
 }
 
 .btn {
   display: block;
-  margin: 0 auto;
+  margin: 20px auto;
   width: fit-content;
   background: #22c55e;
   color: white;
@@ -137,23 +260,27 @@ const enterLogin = () => {
   text-decoration: none;
   font-weight: bold;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .btn:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  background: #16a34a;
 }
 
 .registro {
   margin-top: 15px;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.9); /* Aumentado contraste */
+  color: rgba(255, 255, 255, 0.9);
   text-align: center;
 }
 
 .registro a {
-  color: #93c5fd; /* Color más claro para mejor contraste con fondo */
+  color: #93c5fd;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -162,10 +289,6 @@ const enterLogin = () => {
 .registro a:hover {
   color: #bfdbfe;
   text-decoration: underline;
-}
-
-@media (min-width: 768px) {
-  /* Puedes añadir ajustes específicos para tablets aquí si es necesario */
 }
 
 .welcome-footer {
@@ -181,8 +304,75 @@ const enterLogin = () => {
   margin: 5px 0;
 }
 
+/* Estados de carga */
 .loading-container {
+  position: relative;
+  z-index: 2;
+  text-align: center;
   color: white;
-  font-size: 1.5rem;
+  padding: 40px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-left: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 20px;
+    margin: 10px;
+  }
+
+  .titulo {
+    font-size: 2.5rem;
+  }
+
+  .imagen-circular {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .subtitulo {
+    font-size: 1.2rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
 }
 </style>
