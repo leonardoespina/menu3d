@@ -41,14 +41,14 @@ const columns = ref([
   },
   {
     label: "Logo",
-    field: "logo",
+    field: "imagen",
     type: "file",
-    accept: "image/jpeg, image/png, image/bmp, image/jpg",
+    accept: ".jpg,.jpeg,.png,.bmp",
     uploadLabel: "Seleccionar logo (.jpg, .png, .bmp)",
     sortable: false,
     filterable: false,
     editable: true,
-    visible: false,
+    visible: true,
   },
   {
     label: "Teléfono",
@@ -79,8 +79,9 @@ const columns = ref([
       endpoint="/api/empresa"
       search-placeholder="Buscar Empresa..."
       :editable="true"
-      :deletable="true"
-      :creatable="true"
+      :deletable="false"
+      :creatable="false"
+      :searchable="false"
       @on-create="handleCreate"
       @on-update="handleUpdate"
       @on-delete="handleDelete"

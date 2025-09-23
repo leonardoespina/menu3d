@@ -31,6 +31,12 @@ api.interceptors.request.use(
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
+    // Si estamos enviando FormData, eliminamos el Content-Type para que
+    // axios lo establezca automáticamente a 'multipart/form-data' con el boundary correcto.
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
+
     return config;
   },
   (error) => {

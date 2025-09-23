@@ -1,6 +1,7 @@
 // useFileUpload.js
 import { ref } from "vue";
 import { useAuthStore } from "../stores/auth";
+import { API_BASE_URL as URL_BACKEND } from "../api";
 
 export const useFileUpload = () => {
   const uploadProgress = ref(0);
@@ -68,8 +69,7 @@ export const useFileUpload = () => {
           reject(new Error(uploadError.value));
         });
 
-        const API_BASE_URL =
-          import.meta.env.VITE_API_BASE_URL || "https://api-menu3d.vercel.app";
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || URL_BACKEND;
         const cleanUrl = url.startsWith("/") ? url : `/${url}`;
         const cleanApiBase = API_BASE_URL.endsWith("/")
           ? API_BASE_URL.slice(0, -1)

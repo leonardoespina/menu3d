@@ -21,7 +21,7 @@ const enterLogin = () => {
       <div class="subtitulo">Bienvenidos</div>
       <div class="imagen-circular">
         <img
-          :src="getLogoUrl(empresa.logo)"
+          :src="getLogoUrl(empresa.imagen)"
           :alt="'Logo de ' + empresa.nombre"
         />
       </div>

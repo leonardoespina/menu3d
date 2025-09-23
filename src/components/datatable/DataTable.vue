@@ -24,6 +24,10 @@ const props = defineProps({
     type: String,
     default: "Buscar...",
   },
+  searchable: {
+    type: Boolean,
+    default: true,
+  },
   editable: {
     type: Boolean,
     default: true,
@@ -269,7 +273,7 @@ watch(serverParams, fetchData, { deep: true });
 
     <div class="data-table-header">
       <div class="header-actions">
-        <div class="search-container">
+        <div v-if="searchable" class="search-container">
           <input
             v-model="searchTerm"
             type="text"
